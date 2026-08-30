@@ -1,16 +1,193 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Portfolio</title>
     <style>
+        @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap");
+
+        :root {
+            --bg: #ffffff;
+            --text: #1f1f1f;
+            --muted: #5f6368;
+            --border: #dadce0;
+            --primary: #1a73e8;
+            --surface: #ffffff;
+            --shadow: 0 8px 24px rgba(32, 33, 36, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Manrope", "Segoe UI", sans-serif;
+        }
+
+        .main {
+            width: 100%;
+            max-width: 760px;
+            text-align: center;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            color: var(--muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+            box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.14);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.8rem, 3.8vw, 2.8rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            margin: 14px auto 34px;
+            max-width: 640px;
+            color: var(--muted);
+            font-size: 1.02rem;
+            line-height: 1.6;
+        }
+
+        .project-card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            text-align: left;
+            transition: border-color 160ms ease, transform 160ms ease;
+        }
+
+        .project-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+
+        .project-card:hover {
+            border-color: #c1c7d0;
+            transform: translateY(-2px);
+        }
+
+        .project-label {
+            margin: 0 0 8px;
+            color: var(--muted);
+            font-size: 0.86rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .project-title {
+            margin: 0 0 14px;
+            font-size: 1.02rem;
+            font-weight: 700;
+        }
+
+        .project-link {
+            display: inline-block;
+            text-decoration: none;
+            color: #ffffff;
+            background: var(--primary);
+            border: 1px solid var(--primary);
+            border-radius: 999px;
+            padding: 10px 18px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background-color 140ms ease;
+        }
+
+        .project-link:hover {
+            background: #1765c8;
+        }
+
+        .footer {
+            margin-top: 22px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 560px) {
+            .project-list {
+                grid-template-columns: 1fr;
+            }
+
+            .project-card {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Welcome to My CS280 Portfolio!</h1>
-    <a href="./1/index.html">Project 1</a>
+    <main class="main">
+        <div class="brand">
+            <span class="dot" aria-hidden="true"></span>
+            <span>CS280 Portfolio</span>
+        </div>
+        <h1>Welcome to My CS280 Portfolio</h1>
+        <p class="subtitle">
+            A clean and focused space for my coursework projects, built with a simple
+            and technical visual style.
+        </p>
+
+        <section aria-label="Projects">
+            <ul class="project-list">
+                <li class="project-card">
+                    <p class="project-label">Project 1</p>
+                    <h2 class="project-title">Perspective Exercises</h2>
+                    <a class="project-link" href="./1/index.html">Open</a>
+                </li>
+                <li class="project-card">
+                    <p class="project-label">Project 2</p>
+                    <h2 class="project-title">Coming Soon</h2>
+                    <a class="project-link" href="./2/index.html">Open</a>
+                </li>
+                <li class="project-card">
+                    <p class="project-label">Project 3</p>
+                    <h2 class="project-title">Coming Soon</h2>
+                    <a class="project-link" href="./3/index.html">Open</a>
+                </li>
+                <li class="project-card">
+                    <p class="project-label">Project 4</p>
+                    <h2 class="project-title">Coming Soon</h2>
+                    <a class="project-link" href="./4/index.html">Open</a>
+                </li>
+                <li class="project-card">
+                    <p class="project-label">Project 5</p>
+                    <h2 class="project-title">Coming Soon</h2>
+                    <a class="project-link" href="./5/index.html">Open</a>
+                </li>
+            </ul>
+        </section>
+
+        <p class="footer">Simple structure, easy to adapt for each project.</p>
+    </main>
 </body>
 </html>
