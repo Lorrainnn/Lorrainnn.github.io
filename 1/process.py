@@ -76,7 +76,7 @@ def align_single_l2(mov, ref, search_radius=15):
                 best_score = score
                 best_shift = (dy, dx)
 
-    return best_shift, best_score
+    return best_shift
 
 
 #this one should be as high as possible (close to 1)
@@ -121,42 +121,66 @@ def align_single_ncc(moving, reference, search_radius=15):
 
     return best_shift
 
-im = skio.imread("1/data/cathedral.jpg")
-im = img_as_float32(im)
-#show_img(im)
-#print(split_color_channel(im))
-B, G, R = split_color_channel(im)
+def run_single_scale(image_path):
+    im = skio.imread(image_path)
+    im = img_as_float32(im)
+
+    B, G, R = split_color_channel(im)
+
+    # L2
+    g_shift_l2 = align_single_l2(G, B)
+    r_shift_l2 = align_single_l2(R, B)
+
+    G_l2 = np.roll(G, g_shift_l2, axis=(0, 1))
+    R_l2 = np.roll(R, r_shift_l2, axis=(0, 1))
+
+    result_l2 = np.dstack([
+        R_l2,
+        G_l2,
+        B
+    ])
 
 
 
-naive_rgb = np.dstack([R, G, B])
+    # NCC
+    g_shift_ncc = align_single_ncc(G, B)
+    r_shift_ncc = align_single_ncc(R, B)
 
-plt.imshow(naive_rgb)
-plt.title("Without Alignment")
+    G_ncc = np.roll(G, g_shift_ncc, axis=(0, 1))
+    R_ncc = np.roll(R, r_shift_ncc, axis=(0, 1))
+
+    result_ncc = np.dstack([
+        R_ncc,
+        G_ncc,
+        B
+    ])
+
+    print("\n", image_path)
+
+    print("L2:")
+    print("  G (x, y):", (g_shift_l2[1], g_shift_l2[0]))
+    print("  R (x, y):", (r_shift_l2[1], r_shift_l2[0]))
+
+    print("NCC:")
+    print("  G (x, y):", (g_shift_ncc[1], g_shift_ncc[0]))
+    print("  R (x, y):", (r_shift_ncc[1], r_shift_ncc[0]))
+
+    return result_l2, result_ncc
+
+
+#generate results for jpg with single scale alignment
+
+l2_result, ncc_result  = run_single_scale("1/data/tobolsk.jpg")
+plt.figure()
+plt.imshow(np.clip(l2_result, 0, 1))
+plt.title("tobolsk - L2")
+plt.axis("off")
+plt.savefig("1/output/l2_tobolsk.jpg")
 plt.show()
 
-g_shift, g_score = align_single_l2(G, B)
-r_shift, r_score = align_single_l2(R, B)
-
-
-G_aligned = np.roll(
-    G,
-    shift=g_shift,
-    axis=(0, 1)
-)
-
-R_aligned = np.roll(
-    R,
-    shift=r_shift,
-    axis=(0, 1)
-)
-
-result = np.dstack([
-    R_aligned,
-    G_aligned,
-    B
-])
-
-plt.imshow(np.clip(result, 0, 1))
-plt.title("Aligned Cathedral")
+plt.figure()
+plt.imshow(np.clip(ncc_result, 0, 1))
+plt.title("tobolsk - NCC")
+plt.axis("off")
+plt.savefig("1/output/ncc_tobolsk.jpg")
 plt.show()
