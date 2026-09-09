@@ -19,7 +19,7 @@ def show_img(im):
 
 
 
-def split_channels(im):
+def split_color_channel(im):
     h = im.shape[0] // 3
 
     B = im[:h, :]
@@ -32,12 +32,7 @@ def split_channels(im):
 im = skio.imread("1/data/cathedral.jpg")
 im = img_as_float32(im)
 #show_img(im)
-print(split_channels(im))
+print(split_color_channel(im))
 
-B, G, R = split_channels(im)
-
-print(B.shape)
-print(G.shape)
-print(R.shape)
 
     
