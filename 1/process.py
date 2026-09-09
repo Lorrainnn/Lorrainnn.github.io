@@ -69,11 +69,57 @@ def align_single_l2(mov, ref, search_radius=15):
                 shifted_crop
             )
 
+            #update to best score
+            #so basically l2 should be expected to as small as possible
+
             if score < best_score:
                 best_score = score
                 best_shift = (dy, dx)
 
     return best_shift, best_score
+
+
+#this one should be as high as possible (close to 1)
+def ncc_score(im1, im2):
+    a = im1.ravel()
+    b = im2.ravel()
+
+    a = a - np.mean(a)
+    b = b - np.mean(b)
+
+    denominator = (
+        np.linalg.norm(a) *
+        np.linalg.norm(b)
+    )
+
+    if denominator == 0:
+        return -np.inf
+
+    return np.dot(a, b) / denominator
+
+def align_single_ncc(moving, reference, search_radius=15):
+    best_score = -float("inf")
+    best_shift = (0, 0)
+
+    for dy in range(-search_radius, search_radius + 1):
+        for dx in range(-search_radius, search_radius + 1):
+
+            shifted = np.roll(
+                moving,
+                shift=(dy, dx),
+                axis=(0, 1)
+            )
+
+            score = ncc_score(
+                croppping(shifted),
+                croppping(reference)
+            )
+
+            if score > best_score:
+                best_score = score
+                best_shift = (dy, dx)
+
+    return best_shift
 
 im = skio.imread("1/data/cathedral.jpg")
 im = img_as_float32(im)
