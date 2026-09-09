@@ -65,7 +65,7 @@ def ncc_score(im1, im2):
 
     return np.dot(a, b) / denominator
 
-def align_single(moving, reference, style, search_radius=15):
+def align_single(moving, reference, style, center=(0, 0), search_radius=15):
     if style == "ncc":
         best_score = -float("inf")
     elif style == "l2":
@@ -74,10 +74,11 @@ def align_single(moving, reference, style, search_radius=15):
         raise ValueError("Unknown style")
     
     #init
-    best_shift = (0, 0)
+    best_shift = center
+    center_y, center_x = center
 
-    for dy in range(-search_radius, search_radius + 1):
-        for dx in range(-search_radius, search_radius + 1):
+    for dy in range(center_y - search_radius, center_y + search_radius + 1):
+        for dx in range(center_x - search_radius, center_x + search_radius + 1):
 
             shifted = np.roll(
                 moving,
@@ -109,6 +110,7 @@ def align_single(moving, reference, style, search_radius=15):
 #def align_single_l2(mov, ref, search_radius=15):
 
 
+#this one use for p1 jpg single scale output visualization
 def run_single_scale(image_path):
     im = skio.imread(image_path)
     im = img_as_float32(im)
@@ -127,7 +129,6 @@ def run_single_scale(image_path):
         G_l2,
         B
     ])
-
 
 
     # NCC
@@ -165,49 +166,13 @@ def half_size(im):
     ), anti_aliasing=True)
 
 
-def search_shift_ncc(
-    moving,
-    reference,
-    center=(0, 0),
-    radius=15
-):
-    center_dy, center_dx = center
-
-    best_score = -float("inf")
-    best_shift = center
-
-    reference_crop = croppping(reference)
-
-    for dy in range(
-        center_dy - radius,
-        center_dy + radius + 1
-    ):
-        for dx in range(
-            center_dx - radius,
-            center_dx + radius + 1
-        ):
-
-            shifted = np.roll(
-                moving,
-                shift=(dy, dx),
-                axis=(0, 1)
-            )
-
-            shifted_crop = croppping(shifted)
-
-            score = ncc_score(
-                shifted_crop,
-                reference_crop
-            )
-
-            if score > best_score:
-                best_score = score
-                best_shift = (dy, dx)
-
-    return best_shift
+#In this case, you will need to implement a faster search procedure such as an image pyramid. An image pyramid represents the image at multiple scales (usually scaled by a factor of 2) and the processing is done sequentially starting from the coarsest scale (smallest image) and going down the pyramid, updating your estimate as you go. It is very easy to implement by adding recursive calls to your original single-scale implementation. 
+# You should implement the pyramid functionality yourself using appropriate downsampling techniques.
+def align_pyramid(mov, ref, style, min_size=500, coarse_radius=15, refine_radius=3):
+    h, w = ref.shape
 
 
-
+    if max(h, w) 
 
 #generate results for jpg with single scale alignment
 
