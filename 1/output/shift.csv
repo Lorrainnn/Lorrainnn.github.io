@@ -13,10 +13,10 @@ P2_pyramid,harvesters.tif,l2,16,59,13,124
 P2_pyramid,harvesters.tif,ncc,17,60,13,124
 P2_pyramid,icon.tif,l2,17,41,23,90
 P2_pyramid,icon.tif,ncc,17,41,23,89
-P2_pyramid,melons_failure.tif,l2,11,82,14,141
-P2_pyramid,melons_failure.tif,ncc,11,82,13,141
-P2_pyramid,melons.tif,l2,11,82,13,178
-P2_pyramid,melons.tif,ncc,11,82,13,178
+P2_pyramid,melons_500.tif,l2,11,82,14,141
+P2_pyramid,melons_500.tif,ncc,11,82,13,141
+P2_pyramid,melons_200.tif,l2,11,82,13,178
+P2_pyramid,melons_200.tif,ncc,11,82,13,178
 P2_pyramid,ilemselga.tif,l2,7,39,11,130
 P2_pyramid,ilemselga.tif,ncc,7,40,11,130
 P2_pyramid,self_portrait.tif,l2,29,79,37,176

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 from skimage import io as skio
-from skimage.util import img_as_float32, img_as_ubyte
+from skimage.util import img_as_float32
 from skimage.transform import resize
 
 
@@ -165,10 +165,10 @@ def half_size(im):
         im.shape[1] // 2
     ), anti_aliasing=True)
 
-
+#500
 # In this case, you will need to implement a faster search procedure such as an image pyramid. An image pyramid represents the image at multiple scales (usually scaled by a factor of 2) and the processing is done sequentially starting from the coarsest scale (smallest image) and going down the pyramid, updating your estimate as you go. It is very easy to implement by adding recursive calls to your original single-scale implementation. 
 # You should implement the pyramid functionality yourself using appropriate downsampling techniques.
-def align_pyramid(mov, ref, style, min_size=500, search_radius=15, refine_radius=3):
+def align_pyramid(mov, ref, style, min_size=200, search_radius=15, refine_radius=3):
     h, w = ref.shape
 
     #reach the smallest size, adapt single scale alignment
@@ -271,17 +271,17 @@ def run_pyramid_scale(image_path):
 
     return result_l2, result_ncc
 
-l2_result, ncc_result  = run_pyramid_scale("1/data/emir.tif")
+l2_result, ncc_result  = run_pyramid_scale("1/data/melons.tif")
 plt.figure()
 plt.imshow(np.clip(l2_result, 0, 1))
-plt.title("emir - Pyramid L2")
+plt.title("melons - Pyramid L2")
 plt.axis("off")
-plt.savefig("1/output/l2_pyramid_emir_500.jpg")
+plt.savefig("1/output/l2_pyramid_melons_500.jpg")
 plt.show()
 
 plt.figure()
 plt.imshow(np.clip(ncc_result, 0, 1))
-plt.title("emir - Pyramid NCC")
+plt.title("melons - Pyramid NCC")
 plt.axis("off")
-plt.savefig("1/output/ncc_pyramid_emir_500.jpg")
+plt.savefig("1/output/ncc_pyramid_melons_500.jpg")
 plt.show()
