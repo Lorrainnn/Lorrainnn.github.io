@@ -309,24 +309,33 @@
                         <h3>Automatic Cropping — Wharf</h3>
                         <div class="pair-grid">
                             <div class="pair-col">
+                                <h4>Before</h4>
                                 <div class="img-shell"><img src="./output/wharf_aligned_raw.jpg" alt="Wharf before"/></div>
                             </div>
                             <div class="pair-col">
+                                <h4>After</h4>
                                 <div class="img-shell"><img src="./output/wharf_auto_crop.jpg" alt="Wharf after"/></div>
                             </div>
                         </div>
                         <p class="summary">After alignment, the reconstructed images often contain unwanted border regions caused by the original glass plate, channel displacement, and circular shifting. A fixed crop percentage would be easy, but it would remove the same amount from every image regardless of its actual border size.
 
-                        <br>Instead, I detect likely border rows and columns near the image boundaries using image statistics. The detector looks for regions with extreme brightness, low intensity variation, or unusually strong disagreement between the RGB channels. These properties are common in black/white plate borders and color-misaligned edge artifacts. Once a border is detected, I crop to the remaining valid image region and apply a small additional trim to remove residual artifacts.
+                        <br>Instead, I detect likely border rows and columns near the image boundaries using simple image statistics. After converting the aligned RGB image to grayscale, I examine the mean intensity and standard deviation of rows and columns near each boundary. Rows or columns that are unusually dark or bright and have low intensity variation are treated as likely borders. I then crop the image to the remaining valid region.
 
                         <br>I use wharf as the example because its boundary artifacts are easy to see before cropping. The automatic crop removes the distracting outer regions while preserving the main scene.
                     </div>
 
                     <div class="result-card">
                         <h3>Automatic Contrast — Church</h3>
+                        
                         <div class="pair-grid">
-                            <div class="pair-col"><div class="img-shell"><img src="./output/church_aligned_raw.jpg" alt="Church before"/></div></div>
-                            <div class="pair-col"><div class="img-shell"><img src="./output/church_contrast.jpg" alt="Church after"/></div></div>
+                            <div class="pair-col">
+                                <h4>Before</h4>
+                                <div class="img-shell"><img src="./output/church_aligned_raw.jpg" alt="Church before"/></div>
+                            </div>
+                            <div class="pair-col">
+                                <h4>After</h4>
+                                <div class="img-shell"><img src="./output/church_contrast.jpg" alt="Church after"/></div>
+                            </div>
                         </div>
                         <p class="summary">Some reconstructed images occupy only a narrow portion of the available intensity range, which makes them look slightly flat or washed out.
 
@@ -337,9 +346,16 @@
                     </div>  
                     <div class="result-card">
                         <h3>Automatic White Balance — Self Portrait</h3>
+                       
                         <div class="pair-grid">
-                            <div class="pair-col"><div class="img-shell"><img src="./output/self_portrait_aligned_raw.jpg" alt="Self before"/></div></div>
-                            <div class="pair-col"><div class="img-shell"><img src="./output/self_portrait_white_balance.jpg" alt="Self after"/></div></div>
+                            <div class="pair-col">
+                                <h4>Before</h4>
+                                <div class="img-shell"><img src="./output/self_portrait_aligned_raw.jpg" alt="Self before"/></div>
+                            </div>
+                            <div class="pair-col">
+                                <h4>After</h4>
+                                <div class="img-shell"><img src="./output/self_portrait_white_balance.jpg" alt="Self after"/></div>
+                            </div>
                         </div>
                         <p class="summary">Even after the channels are aligned, some reconstructions retain an overall color cast because the three historical exposures do not have identical average responses.
 
@@ -350,9 +366,16 @@
 
                     <div class="result-card">
                         <h3>Better Color Mapping — Melons</h3>
+                     
                         <div class="pair-grid">
-                            <div class="pair-col"><div class="img-shell"><img src="./output/melons_aligned_raw.jpg" alt="Melons before"/></div></div>
-                            <div class="pair-col"><div class="img-shell"><img src="./output/melons_color_mapping.jpg" alt="Melons after"/></div></div>
+                            <div class="pair-col">
+                                <h4>Before</h4>
+                                <div class="img-shell"><img src="./output/melons_aligned_raw.jpg" alt="Melons before"/></div>
+                            </div>
+                            <div class="pair-col">
+                                <h4>After</h4>
+                                <div class="img-shell"><img src="./output/melons_color_mapping.jpg" alt="Melons after"/></div>
+                            </div>
                         </div>
                         <p class="summary">The basic reconstruction assumes that the three historical photographic filters correspond directly to modern RGB display channels. In practice, those filter responses are not guaranteed to match modern RGB primaries exactly.
 
