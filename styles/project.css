@@ -1,5 +1,22 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap");
 
+@media print {
+  .result-card,
+  .image-card,
+  .comparison-card,
+  figure {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  img {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    max-width: 100%;
+    height: auto;
+  }
+}
+
 :root {
     --bg: #ffffff;
     --text: #1f1f1f;
