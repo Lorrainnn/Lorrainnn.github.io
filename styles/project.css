@@ -1,21 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&display=swap");
 
-@media print {
-  .result-card,
-  .image-card,
-  .comparison-card,
-  figure {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
 
-  img {
-    break-inside: avoid;
-    page-break-inside: avoid;
-    max-width: 100%;
-    height: auto;
-  }
-}
 
 :root {
     --bg: #ffffff;
@@ -132,5 +117,39 @@ img {
     .topline {
         align-items: flex-start;
         flex-direction: column;
+    }
+}
+
+/* Print rules: avoid splitting result cards, comparison columns, and figures across PDF pages.
+   These rules apply only for print and do not affect normal screen layout. */
+@media print {
+    .result-card,
+    .section-card,
+    .pair-grid,
+    .pair-col,
+    .img-shell,
+    .cards,
+    .report {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+        -webkit-column-break-inside: avoid !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    /* Ensure images are visible and not clipped in print */
+    .img-shell img,
+    .pair-col img,
+    img {
+        max-height: none !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    /* Prefer page breaks between cards rather than inside them */
+    .result-card,
+    .section-card {
+        page-break-after: avoid;
+        page-break-before: avoid;
     }
 }
