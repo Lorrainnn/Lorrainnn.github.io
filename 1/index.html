@@ -3,8 +3,134 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Project 3</title>
+    <title>CS280A Project 1</title>
     <link rel="stylesheet" href="../styles/project.css" />
+    <style>
+        .report {
+            display: grid;
+            gap: 20px;
+        }
+
+        .section-card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+            padding: 18px;
+        }
+
+        .section-card h2 {
+            margin: 0 0 8px;
+            font-size: 1.3rem;
+        }
+
+        .section-note {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .cards {
+            display: grid;
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        .result-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            background: #fff;
+        }
+
+        .result-card h3 {
+            margin: 0 0 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .pair-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            align-items: start;
+        }
+
+        .pair-col {
+            border: 1px solid #eceff3;
+            border-radius: 10px;
+            padding: 10px;
+            background: #fcfdff;
+        }
+
+        .pair-col h4 {
+            margin: 0 0 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .img-shell {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #f7f8fa;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+        }
+
+        .img-shell img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border: 0;
+            border-radius: 0;
+        }
+
+        .missing {
+            padding: 10px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .shift {
+            margin: 8px 0 0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.84rem;
+            color: #334155;
+        }
+
+        .summary {
+            margin-top: 12px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .special {
+            border-left: 3px solid #1a73e8;
+            background: #f8fbff;
+        }
+
+        .special h3 {
+            margin: 0 0 8px;
+            font-size: 1.05rem;
+        }
+
+        .special p {
+            margin: 8px 0 0;
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        @media (max-width: 860px) {
+            .pair-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <main class="container">
@@ -13,13 +139,461 @@
                 <p class="badge">CS280 Project</p>
                 <a class="home-link" href="../index.html">Back to Main</a>
             </div>
-            <h1>Project 3</h1>
-            <p class="desc">Template page with reusable header. Add your project content in the blank area below.</p>
+            <h1>CS280A Project 1: Images of the Russian Empire</h1>
+            <p class="desc">Baseline experiment showcase focusing on Part 1 Single-Scale Alignment and Part 2 Multi-Scale Pyramid.</p>
         </header>
 
-        <section class="content-placeholder">
-            <p>Content placeholder.</p>
+        <section class="report">
+            <article class="section-card">
+                <h2>Part 1: Single-Scale Alignment</h2>
+                <p class="section-note">Method / Implementation Overview: Basically, the method described as each glass-plate image is split vertically into Blue, Green, and Red channels. Blue is used as the reference. Green and Red are aligned independently by exhaustive search in a bounded displacement window using two pixel-based metrics (L2 distance and NCC). The best displacements are then applied to Green and Red before stacking channels back into RGB.</p>
+                <div id="part1-cards" class="cards"></div>
+                <p class="summary">Summary: For these lower-resolution JPG inputs, L2 and NCC produce identical or very close displacements in practice. Single-scale exhaustive search is sufficient here, but becomes really expensive for high-resolution TIFF images since it matches from pixel to pixel, thus we introduce a multi-scale pyramid approach in P2.</p>
+            </article>
+
+            <article class="section-card">
+                <h2>Part 2: Multi-Scale Image Pyramid</h2>
+                <p class="section-note">Method / Implementation Overview: Direct exhaustive search on high-resolution TIFF images is costly, so alignment is performed coarse-to-fine with an image pyramid. We repeatedly downsample to a coarse level, solve for displacement there, then propagate upward by doubling the shift and refining in a local window at each finer level. The same pyramid pipeline is evaluated with both L2 and NCC under the same standard as P1.</p>
+                <p class="section-note">Default setting for regular TIFF cases (except Emir and Melons special analyses about how different min_size would affect the results): min_size = 200.</p>
+                <div id="part2-cards" class="cards"></div>
+            </article>
+
+            <article class="section-card">
+                <h2>Additional Images from the Prokudin-Gorskii Collection</h2>
+                <p class="section-note">To test the generalization of the alignment pipeline, here's the three additional high-resolution images from the Prokudin-Gorskii collection and processed them using the same multi-scale pyramid alignment framework with both L2 and NCC. They loook really cool and has strong/bold visual impact.</p>
+
+                <div class="result-card">
+                    <h3>Image 01</h3>
+                    <div class="pair-grid">
+                        <div class="pair-col">
+                            <h4>L2 Pyramid Result</h4>
+                            <div class="img-shell">
+                                <img src="./output/l2_01.jpg" alt="Image 01 L2 result" />
+                            </div>
+                            <p class="shift">G shift: (22, 55)</p>
+                            <p class="shift">R shift: (30, 115)</p>
+                        </div>
+                        <div class="pair-col">
+                            <h4>NCC Pyramid Result</h4>
+                            <div class="img-shell">
+                                <img src="./output/ncc_01.jpg" alt="Image 01 NCC result" />
+                            </div>
+                            <p class="shift">G shift: (22, 55)</p>
+                            <p class="shift">R shift: (30, 115)</p>
+                        </div>
+                    </div>
+                    <p class="summary">Observation: L2 and NCC produced identical displacement estimates on this image.</p>
+                </div>
+
+                <div class="result-card">
+                    <h3>Image 02</h3>
+                    <div class="pair-grid">
+                        <div class="pair-col">
+                            <h4>L2 Pyramid Result</h4>
+                            <div class="img-shell">
+                                <img src="./output/l2_02.jpg" alt="Image 02 L2 result" />
+                            </div>
+                            <p class="shift">G shift: (-13, 47)</p>
+                            <p class="shift">R shift: (-20, 289)</p>
+                        </div>
+                        <div class="pair-col">
+                            <h4>NCC Pyramid Result</h4>
+                            <div class="img-shell">
+                                <img src="./output/ncc_02.jpg" alt="Image 02 NCC result" />
+                            </div>
+                            <p class="shift">G shift: (-13, 47)</p>
+                            <p class="shift">R shift: (-42, 85)</p>
+                        </div>
+                    </div>
+                    <p class="summary">Image 02 shows a substantial difference between L2 and NCC, especially for the red channel. Because the scene is dominated by many different shades of red, corresponding structures can have very different intensities across the historical color channels. This makes raw pixel matching more ambiguous and causes the two metrics to produce noticeably different displacement estimates.</p>
+                </div>
+
+                <div class="result-card">
+                    <h3>Image 03</h3>
+                    <div class="pair-grid">
+                        <div class="pair-col">
+                            <h4>L2 Pyramid Result</h4>
+                            <div class="img-shell">
+                                <img src="./output/l2_03.jpg" alt="Image 03 L2 result" />
+                            </div>
+                            <p class="shift">G shift: (6, 60)</p>
+                            <p class="shift">R shift: (-5, 124)</p>
+                        </div>
+                        <div class="pair-col">
+                            <h4>NCC Pyramid Result</h4>
+                            <div class="img-shell">
+                                <img src="./output/ncc_03.jpg" alt="Image 03 NCC result" />
+                            </div>
+                            <p class="shift">G shift: (6, 60)</p>
+                            <p class="shift">R shift: (-5, 124)</p>
+                        </div>
+                    </div>
+                    <p class="summary">Observation: L2 and NCC again converged to the same displacement estimates for this image.</p>
+                </div>
+
+                <p class="summary">Across Images 01 and 03, L2 and NCC converged to identical alignment estimates. Image 02 was more challenging and produced substantially different red-channel offsets, illustrating that the similarity metric can influence pyramid alignment when cross-channel appearance differs.</p>
+            </article>
+
+            <article class="section-card special">
+                <h2>Special Case / Failure Analysis</h2>
+
+                <div class="result-card">
+                    <h3>Emir: NCC Pyramid Sensitivity</h3>
+                    <div class="pair-grid">
+                        <div class="pair-col">
+                            <h4>min_size = 500 (NCC)</h4>
+                            <div class="img-shell" data-image="output/ncc_pyramid_emir_500.jpg"></div>
+                            <p class="shift" data-shift="emir_500.tif|ncc|g">G shift: loading...</p>
+                            <p class="shift" data-shift="emir_500.tif|ncc|r">R shift: loading...</p>
+                        </div>
+                        <div class="pair-col">
+                            <h4>min_size = 200 (NCC)</h4>
+                            <div class="img-shell" data-image="output/ncc_pyramid_emir_200.jpg"></div>
+                            <p class="shift" data-shift="emir_200.tif|ncc|g">G shift: loading...</p>
+                            <p class="shift" data-shift="emir_200.tif|ncc|r">R shift: loading...</p>
+                        </div>
+                    </div>
+                    <p class="summary">L2 remains visually stable across these two pyramid settings in this experiment, while raw-pixel NCC fails when min_size is reduced to 200. Strong cross-channel appearance differences in Emir make very coarse levels less reliable for pixel-intensity matching, and an incorrect coarse estimate can propagate through the pyramid.</p>
+                </div>
+
+                <div class="result-card" style="margin-top:12px;">
+                    <h3>Melons: Pyramid Search Range</h3>
+                    <div class="pair-grid">
+                        <div class="pair-col">
+                            <h4>min_size = 500 (NCC)</h4>
+                            <div class="img-shell" data-image="output/ncc_pyramid_melons_500.jpg"></div>
+                            <p class="shift" data-shift="melons_500.tif|ncc|g">G shift: loading...</p>
+                            <p class="shift" data-shift="melons_500.tif|ncc|r">R shift: loading...</p>
+                        </div>
+                        <div class="pair-col">
+                            <h4>min_size = 200 (NCC)</h4>
+                            <div class="img-shell" data-image="output/ncc_pyramid_melons_200.jpg"></div>
+                            <p class="shift" data-shift="melons_200.tif|ncc|g">G shift: loading...</p>
+                            <p class="shift" data-shift="melons_200.tif|ncc|r">R shift: loading...</p>
+                        </div>
+                    </div>
+                    <p class="summary">Here the issue is opposite to Emir: the true Red displacement is large, and with min_size = 500 the coarse-level search can miss it and lock on a boundary-adjacent estimate. Reducing min_size to 200 compresses the displacement into the coarse search range and recovers the correct alignment.</p>
+                </div>
+
+                <p class="summary">Some reflections to Pyramid: A deeper pyramid is not automatically better. Melons benefits from deeper coarse levels to bring large displacements into search range, while Emir can become less stable under aggressive downsampling due to cross-channel appearance mismatch in raw-pixel NCC. This sensitivity motivates more robust features since it's almost impossible to always manually adjust the parameter.</p>
+            </article>
+
+            <article class="section-card">
+                <h2>Bells &amp; Whistles</h2>
+                <p class="section-note">A set of lightweight extensions that improve pipeline robustness and presentation. Each subsection below shows a concise before/after comparison using a representative image.</p>
+
+                <div class="cards">
+                    <div class="result-card">
+                        <h3>Better Features — Emir</h3>
+                        <div class="pair-grid">
+                            <div class="pair-col">
+                                <h4>Raw-Pixel NCC, min_size = 200</h4>
+                                <div class="img-shell" data-image="output/emir_aligned_raw.jpg"></div>
+                                <p class="shift">G shift: (24, 49)</p>
+                                <p class="shift">R shift: (-455, 416)</p>
+                            </div>
+                            <div class="pair-col">
+                                <h4>Gradient NCC, min_size = 200</h4>
+                                <div class="img-shell" data-image="output/emir_gradient_ncc.jpg"></div>
+                                <p class="shift">G shift: (24, 49)</p>
+                                <p class="shift">R shift: (40, 107)</p>
+                            </div>
+                        </div>
+                        <p class="summary">The baseline alignment compares raw pixel intensities using L2 or NCC. This works well for many images, but it can fail when the same physical object appears very different across the historical color filters. The case study image emir.tif is a good example: some regions, especially the clothing, have very different intensities in the blue and red channels.
+                            <br>To make the alignment less sensitive to absolute brightness, I computed the gradient magnitude of each channel and performed NCC alignment on the gradient images instead of the raw intensities. Gradients emphasize edges and spatial structure—such as facial contours, clothing boundaries, and architectural edges—while reducing the effect of large cross-channel brightness differences.
+                            <br>For Emir, raw-pixel NCC with a very coarse pyramid produced a clearly incorrect red-channel shift of (-455, 416). Using gradient features under the same pyramid setting produced a visually stable alignment with shifts G = (24, 49) and R = (40, 107). The gradient images are only used to estimate the displacement; the final RGB reconstruction still uses the original color channels.
+                        </p>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Automatic Cropping — Wharf</h3>
+                        <div class="pair-grid">
+                            <div class="pair-col">
+                                <div class="img-shell"><img src="./output/wharf_aligned_raw.jpg" alt="Wharf before"/></div>
+                            </div>
+                            <div class="pair-col">
+                                <div class="img-shell"><img src="./output/wharf_auto_crop.jpg" alt="Wharf after"/></div>
+                            </div>
+                        </div>
+                        <p class="summary">After alignment, the reconstructed images often contain unwanted border regions caused by the original glass plate, channel displacement, and circular shifting. A fixed crop percentage would be easy, but it would remove the same amount from every image regardless of its actual border size.
+
+                        <br>Instead, I detect likely border rows and columns near the image boundaries using image statistics. The detector looks for regions with extreme brightness, low intensity variation, or unusually strong disagreement between the RGB channels. These properties are common in black/white plate borders and color-misaligned edge artifacts. Once a border is detected, I crop to the remaining valid image region and apply a small additional trim to remove residual artifacts.
+
+                        <br>I use wharf as the example because its boundary artifacts are easy to see before cropping. The automatic crop removes the distracting outer regions while preserving the main scene.
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Automatic Contrast — Church</h3>
+                        <div class="pair-grid">
+                            <div class="pair-col"><div class="img-shell"><img src="./output/church_aligned_raw.jpg" alt="Church before"/></div></div>
+                            <div class="pair-col"><div class="img-shell"><img src="./output/church_contrast.jpg" alt="Church after"/></div></div>
+                        </div>
+                        <p class="summary">Some reconstructed images occupy only a narrow portion of the available intensity range, which makes them look slightly flat or washed out.
+
+                        <br>I improve contrast using percentile-based intensity stretching. Instead of using the absolute minimum and maximum—which can be dominated by a few extreme pixels—I compute the 2nd and 98th intensity percentiles and map that range linearly to [0, 1]. Values outside the range are clipped.
+
+                        <br>This gives a simple form of automatic contrast enhancement without manually selecting brightness thresholds for each image. On church, the result produces clearer separation between dark and bright regions while keeping the overall appearance natural.
+                        </p>
+                    </div>  
+                    <div class="result-card">
+                        <h3>Automatic White Balance — Self Portrait</h3>
+                        <div class="pair-grid">
+                            <div class="pair-col"><div class="img-shell"><img src="./output/self_portrait_aligned_raw.jpg" alt="Self before"/></div></div>
+                            <div class="pair-col"><div class="img-shell"><img src="./output/self_portrait_white_balance.jpg" alt="Self after"/></div></div>
+                        </div>
+                        <p class="summary">Even after the channels are aligned, some reconstructions retain an overall color cast because the three historical exposures do not have identical average responses.
+
+                        <br>For white balance, I use the Gray World assumption: over a sufficiently varied scene, the average color should be approximately neutral gray. I compute the mean intensity of the R, G, and B channels, then scale each channel so that all three means approach a shared target value.
+
+                        <br>This is a simple global correction and does not require manually identifying a white object in the scene. On self_portrait, the adjustment reduces the overall color bias and produces a more balanced image. The result should be interpreted as a plausible correction rather than a ground-truth reconstruction of the historical colors.</p>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>Better Color Mapping — Melons</h3>
+                        <div class="pair-grid">
+                            <div class="pair-col"><div class="img-shell"><img src="./output/melons_aligned_raw.jpg" alt="Melons before"/></div></div>
+                            <div class="pair-col"><div class="img-shell"><img src="./output/melons_color_mapping.jpg" alt="Melons after"/></div></div>
+                        </div>
+                        <p class="summary">The basic reconstruction assumes that the three historical photographic filters correspond directly to modern RGB display channels. In practice, those filter responses are not guaranteed to match modern RGB primaries exactly.
+
+                        <br>To explore a more flexible mapping, I apply a small linear 3*3 color transformation to the aligned RGB values. This allows each output color channel to depend slightly on all three historical channels rather than treating them as completely independent modern R, G, and B measurements.
+
+                        <br>I use melons as the example because its strong and varied colors make the effect of the mapping easy to observe. The transform improves color separation and produces a more visually expressive result. Since no calibration target or exact spectral response data is available, this transformation is an approximate color correction rather than a physically calibrated recovery.</p>
+                    </div>
+                </div>
+
+                <div class="result-card" style="margin-top:12px;">
+                    <h3>Bells &amp; Whistles Summary</h3>
+              
+                    <p class="summary">Together, these five extensions improve both the geometric robustness and the visual quality of the reconstruction pipeline: gradient features make alignment more reliable, automatic cropping removes boundary artifacts, contrast stretching improves tonal range, white balance reduces global color casts, and color mapping provides a more flexible interpretation of the historical color channels.</p>
+                </div>
+            </article>
         </section>
     </main>
+
+    <script id="shift-csv-inline" type="text/plain">
+part,image,method,g_x,g_y,r_x,r_y
+P1_single,tobolsk.jpg,l2,3,3,3,6
+P1_single,tobolsk.jpg,ncc,3,3,3,6
+P1_single,cathedral.jpg,l2,2,5,3,12
+P1_single,cathedral.jpg,ncc,2,5,3,12
+P1_single,monastery.jpg,l2,2,-3,2,3
+P1_single,monastery.jpg,ncc,2,-3,2,3
+P2_pyramid,church.tif,l2,4,25,-4,58
+P2_pyramid,church.tif,ncc,4,25,-4,58
+P2_pyramid,emir_500.tif,l2,24,49,57,103
+P2_pyramid,emir_500.tif,ncc,24,49,56,104
+P2_pyramid,harvesters.tif,l2,16,59,13,124
+P2_pyramid,harvesters.tif,ncc,17,60,13,124
+P2_pyramid,icon.tif,l2,17,41,23,90
+P2_pyramid,icon.tif,ncc,17,41,23,89
+P2_pyramid,melons_500.tif,l2,11,82,14,141
+P2_pyramid,melons_500.tif,ncc,11,82,13,141
+P2_pyramid,melons_200.tif,l2,11,82,13,178
+P2_pyramid,melons_200.tif,ncc,11,82,13,178
+P2_pyramid,ilemselga.tif,l2,7,39,11,130
+P2_pyramid,ilemselga.tif,ncc,7,40,11,130
+P2_pyramid,self_portrait.tif,l2,29,79,37,176
+P2_pyramid,self_portrait.tif,ncc,29,79,37,176
+P2_pyramid,religious_painting.tif,l2,3,28,7,68
+P2_pyramid,religious_painting.tif,ncc,3,28,7,68
+P2_pyramid,siren.tif,l2,-6,49,-25,96
+P2_pyramid,siren.tif,ncc,-6,49,-25,96
+P2_pyramid,three_generations.tif,l2,14,53,11,112
+P2_pyramid,three_generations.tif,ncc,14,53,11,112
+P2_pyramid,wharf.tif,l2,-7,15,-16,83
+P2_pyramid,wharf.tif,ncc,-7,15,-16,83
+P2_pyramid,emir_200.tif,l2,24,49,57,103
+P2_pyramid,emir_200.tif,ncc,24,49,-455,416
+    </script>
+
+    <script>
+        const part1Items = [
+            { label: "cathedral.jpg", key: "cathedral.jpg", outputStem: "cathedral" },
+            { label: "monastery.jpg", key: "monastery.jpg", outputStem: "monastery" },
+            { label: "tobolsk.jpg", key: "tobolsk.jpg", outputStem: "tobolsk" }
+        ];
+
+        const part2Items = [
+            { label: "church.tif", key: "church.tif", outputStem: "church" },
+            { label: "emir.tif", key: "emir_200.tif", outputStem: "emir_200" },
+            { label: "harvesters.tif", key: "harvesters.tif", outputStem: "harvesters" },
+            { label: "icon.tif", key: "icon.tif", outputStem: "icon" },
+            { label: "melons.tif", key: "melons_200.tif", outputStem: "melons_200" },
+            { label: "ilemselga.tif", key: "ilemselga.tif", outputStem: "ilemselga" },
+            { label: "self_portrait.tif", key: "self_portrait.tif", outputStem: "self_portrait" },
+            { label: "religious_painting.tif", key: "religious_painting.tif", outputStem: "religious_painting" },
+            { label: "siren.tif", key: "siren.tif", outputStem: "siren" },
+            { label: "three_generations.tif", key: "three_generations.tif", outputStem: "three_generations" },
+            { label: "wharf.tif", key: "wharf.tif", outputStem: "wharf" }
+        ];
+
+        function parseShiftCsv(text) {
+            const lines = text.trim().split(/\r?\n/);
+            const header = lines.shift();
+            if (!header) {
+                return new Map();
+            }
+
+            const table = new Map();
+            for (const line of lines) {
+                if (!line.trim()) {
+                    continue;
+                }
+                const [part, image, method, gX, gY, rX, rY] = line.split(",");
+                const key = `${image}|${method}`;
+                table.set(key, {
+                    part,
+                    image,
+                    method,
+                    g: `(${gX}, ${gY})`,
+                    r: `(${rX}, ${rY})`
+                });
+            }
+            return table;
+        }
+
+        function makeImgShell(src) {
+            const shell = document.createElement("div");
+            shell.className = "img-shell";
+
+            const img = document.createElement("img");
+            img.src = src;
+            img.loading = "lazy";
+            img.alt = src;
+            img.onerror = () => {
+                shell.innerHTML = "";
+                const missing = document.createElement("div");
+                missing.className = "missing";
+                missing.textContent = `Missing output image: ${src}`;
+                shell.appendChild(missing);
+            };
+
+            shell.appendChild(img);
+            return shell;
+        }
+
+        function setShiftText(node, table, imageKey, methodKey, channelKey) {
+            const rec = table.get(`${imageKey}|${methodKey}`);
+            if (!rec) {
+                node.textContent = `${channelKey.toUpperCase()} shift: missing in CSV`;
+                return;
+            }
+            node.textContent = `${channelKey.toUpperCase()} shift: ${rec[channelKey]}`;
+        }
+
+        function buildPairCard(item, mode) {
+            const card = document.createElement("section");
+            card.className = "result-card";
+
+            const title = document.createElement("h3");
+            title.textContent = item.label;
+            card.appendChild(title);
+
+            const grid = document.createElement("div");
+            grid.className = "pair-grid";
+
+            const left = document.createElement("div");
+            left.className = "pair-col";
+            const leftH = document.createElement("h4");
+            leftH.textContent = mode === "single" ? "L2 Result" : "L2 Pyramid Result";
+            left.appendChild(leftH);
+
+            const l2Src = mode === "single"
+                ? `output/l2_${item.outputStem}.jpg`
+                : `output/l2_pyramid_${item.outputStem}.jpg`;
+            left.appendChild(makeImgShell(l2Src));
+
+            const l2G = document.createElement("p");
+            l2G.className = "shift";
+            l2G.dataset.shift = `${item.key}|l2|g`;
+            l2G.textContent = "G shift: loading...";
+            left.appendChild(l2G);
+
+            const l2R = document.createElement("p");
+            l2R.className = "shift";
+            l2R.dataset.shift = `${item.key}|l2|r`;
+            l2R.textContent = "R shift: loading...";
+            left.appendChild(l2R);
+
+            const right = document.createElement("div");
+            right.className = "pair-col";
+            const rightH = document.createElement("h4");
+            rightH.textContent = mode === "single" ? "NCC Result" : "NCC Pyramid Result";
+            right.appendChild(rightH);
+
+            const nccSrc = mode === "single"
+                ? `output/ncc_${item.outputStem}.jpg`
+                : `output/ncc_pyramid_${item.outputStem}.jpg`;
+            right.appendChild(makeImgShell(nccSrc));
+
+            const nccG = document.createElement("p");
+            nccG.className = "shift";
+            nccG.dataset.shift = `${item.key}|ncc|g`;
+            nccG.textContent = "G shift: loading...";
+            right.appendChild(nccG);
+
+            const nccR = document.createElement("p");
+            nccR.className = "shift";
+            nccR.dataset.shift = `${item.key}|ncc|r`;
+            nccR.textContent = "R shift: loading...";
+            right.appendChild(nccR);
+
+            grid.appendChild(left);
+            grid.appendChild(right);
+            card.appendChild(grid);
+
+            return card;
+        }
+
+        async function initReport() {
+            const part1Root = document.getElementById("part1-cards");
+            const part2Root = document.getElementById("part2-cards");
+
+            for (const item of part1Items) {
+                part1Root.appendChild(buildPairCard(item, "single"));
+            }
+            for (const item of part2Items) {
+                part2Root.appendChild(buildPairCard(item, "pyramid"));
+            }
+
+            const staticShells = document.querySelectorAll(".img-shell[data-image]");
+            staticShells.forEach((shell) => {
+                const src = shell.getAttribute("data-image");
+                if (!src) {
+                    return;
+                }
+                shell.replaceWith(makeImgShell(src));
+            });
+
+            let table = new Map();
+
+            const inlineCsv = document.getElementById("shift-csv-inline");
+            if (inlineCsv && inlineCsv.textContent && inlineCsv.textContent.trim()) {
+                table = parseShiftCsv(inlineCsv.textContent);
+            }
+
+            try {
+                const res = await fetch("output/shift.csv", { cache: "no-store" });
+                if (res.ok) {
+                    table = parseShiftCsv(await res.text());
+                }
+            } catch (_err) {
+                // Keep inline CSV fallback when running from file:// without a local server.
+            }
+
+            const shiftNodes = document.querySelectorAll("[data-shift]");
+            shiftNodes.forEach((node) => {
+                const key = node.getAttribute("data-shift");
+                if (!key) {
+                    return;
+                }
+                const [imageKey, methodKey, channelKey] = key.split("|");
+                setShiftText(node, table, imageKey, methodKey, channelKey);
+            });
+        }
+
+        initReport();
+    </script>
 </body>
 </html>

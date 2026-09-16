@@ -271,6 +271,7 @@ def run_pyramid_scale(image_path):
 
     return result_l2, result_ncc
 
+
 l2_result, ncc_result  = run_pyramid_scale("1/data/melons.tif")
 plt.figure()
 plt.imshow(np.clip(l2_result, 0, 1))
