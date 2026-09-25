@@ -3,8 +3,166 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Project 2</title>
+    <title>CS280A Project 2</title>
     <link rel="stylesheet" href="../styles/project.css" />
+    <style>
+        .report {
+            display: grid;
+            gap: 20px;
+        }
+
+        .section-card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+            padding: 18px;
+        }
+
+        .section-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.3rem;
+        }
+
+        .section-note {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        .subsection {
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .subsection:first-of-type {
+            margin-top: 14px;
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        .subsection h3 {
+            margin: 0 0 8px;
+            font-size: 1.08rem;
+        }
+
+        .subsection h4 {
+            margin: 0 0 8px;
+            font-size: 0.98rem;
+        }
+
+        .body-text {
+            margin: 0 0 12px;
+            color: #334155;
+            line-height: 1.7;
+        }
+
+        .figure-card {
+            margin: 14px 0 0;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #fcfdff;
+            padding: 12px;
+        }
+
+        .figure-card img {
+            display: block;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .figure-card figcaption {
+            margin-top: 10px;
+            color: var(--muted);
+            line-height: 1.55;
+            font-size: 0.92rem;
+        }
+
+        .snippet-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .snippet-card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #fcfdff;
+            padding: 12px;
+        }
+
+        .snippet-card pre {
+            margin: 0;
+            overflow-x: auto;
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 0.88rem;
+            line-height: 1.55;
+        }
+
+        .snippet-card code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .runtime-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .runtime-table th,
+        .runtime-table td {
+            padding: 12px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .runtime-table th {
+            background: #f8fafc;
+            font-size: 0.9rem;
+        }
+
+        .runtime-table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .equation {
+            margin: 10px 0;
+            padding: 10px 12px;
+            border-left: 3px solid #1a73e8;
+            background: #f8fbff;
+            border-radius: 0 10px 10px 0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: #1f2937;
+            overflow-x: auto;
+        }
+
+        .wide-figure {
+            margin-top: 14px;
+        }
+
+        @media (max-width: 860px) {
+            .snippet-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .section-card {
+                padding: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
     <main class="container">
@@ -13,12 +171,206 @@
                 <p class="badge">CS280 Project</p>
                 <a class="home-link" href="../index.html">Back to Main</a>
             </div>
-            <h1>Project 2</h1>
-            <p class="desc">Template page with reusable header. Add your project content in the blank area below.</p>
+            <h1>CS280A Project 2: Fun with Filters</h1>
+            <p class="desc">Part 1 only. This report follows the notebook implementation, saved figures, and measured runtime from the local main.ipynb.</p>
         </header>
 
-        <section class="content-placeholder">
-            <p>Content placeholder.</p>
+        <section class="report">
+            <article class="section-card">
+                <h2>Part 1: Fun with Filters</h2>
+                <p class="section-note">This part starts from a hand-written NumPy convolution, then uses finite differences to measure image gradients, and finally adds Gaussian smoothing and a derivative-of-Gaussian construction to reduce noise. The saved figures in <a href="./data/p1_1_convolution_results.png">data/p1_1_convolution_results.png</a> through <a href="./data/p1_bw_orientation.png">data/p1_bw_orientation.png</a> match the notebook outputs used below.</p>
+            </article>
+
+            <article class="section-card">
+                <h2>1.1 Convolutions from Scratch</h2>
+                <p class="body-text">Convolution slides a small kernel across the image. At each output location, the local patch is multiplied elementwise by the flipped kernel and summed. I implemented this in two ways: one version uses four explicit loops over image and kernel indices, and the other keeps only the outer two loops while NumPy handles the patch multiplication and reduction. In both cases, I use zero padding so the output stays the same size as the input. The box filter acts like local averaging, so it blurs the image, while the finite-difference filters respond to changes along x and y.</p>
+
+                <div class="snippet-grid">
+                    <div class="snippet-card">
+                        <h4>Four nested loops</h4>
+                        <pre><code>def convolve_four_loops(image, kernel):
+    kernel = np.flip(kernel, axis=(0, 1))
+    pad_h = kernel.shape[0] // 2
+    pad_w = kernel.shape[1] // 2
+    padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode="constant")
+    output = np.zeros_like(image, dtype=float)
+
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            for m in range(kernel.shape[0]):
+                for n in range(kernel.shape[1]):
+                    output[i, j] += padded_image[i + m, j + n] * kernel[m, n]
+
+    return output</code></pre>
+                    </div>
+
+                    <div class="snippet-card">
+                        <h4>Two explicit loops</h4>
+                        <pre><code>def convolve_two_loops(image, kernel):
+    kernel = np.flip(kernel, axis=(0, 1))
+    pad_h = kernel.shape[0] // 2
+    pad_w = kernel.shape[1] // 2
+    padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode="constant")
+    output = np.zeros_like(image, dtype=float)
+
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            region = padded_image[i:i + kernel.shape[0], j:j + kernel.shape[1]]
+            output[i, j] = np.sum(region * kernel)
+
+    return output</code></pre>
+                    </div>
+                </div>
+
+                <table class="runtime-table" aria-label="Convolution runtime comparison">
+                    <thead>
+                        <tr>
+                            <th>Implementation</th>
+                            <th>Runtime</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Four nested loops</td>
+                            <td>115.3169 s</td>
+                        </tr>
+                        <tr>
+                            <td>Two nested loops</td>
+                            <td>11.3973 s</td>
+                        </tr>
+                        <tr>
+                            <td>scipy.signal.convolve2d</td>
+                            <td>0.4912 s</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p class="body-text">The four-loop version is slow because almost all of the work happens in Python. The two-loop version is much faster because NumPy performs the patch-wise multiply-and-sum inside compiled code. SciPy is still far faster because it uses an optimized convolution implementation. For the derivative display, I only changed the visualization limits with the 99th percentile of the absolute derivative values; the actual derivative computation stayed the same.</p>
+
+                <figure class="figure-card wide-figure">
+                    <img src="./data/p1_1_convolution_results.png" alt="Original image, box filtered image, and finite difference responses" />
+                    <figcaption>Original grayscale photo, 9x9 box filter output, and the Dx/Dy responses from the same custom convolution code.</figcaption>
+                </figure>
+            </article>
+
+            <article class="section-card">
+                <h2>1.2 Finite Difference Operator</h2>
+                <p class="body-text">An image can be treated as an intensity function I(x, y). Edges appear where intensity changes quickly, so I estimate the partial derivatives with finite differences. The horizontal derivative <span class="equation">I<sub>x</sub> = I * D<sub>x</sub></span> responds strongly to vertical edges, while the vertical derivative <span class="equation">I<sub>y</sub> = I * D<sub>y</sub></span> responds strongly to horizontal edges. I then combine them into the gradient magnitude <span class="equation">|∇I| = sqrt(I<sub>x</sub><sup>2</sup> + I<sub>y</sub><sup>2</sup>)</span>, which gives a single edge-strength score that does not depend on orientation.</p>
+
+                <figure class="figure-card wide-figure">
+                    <img src="./data/p1_2_gradients.png" alt="Partial derivatives and gradient magnitude" />
+                    <figcaption>The finite differences pick out the main edge structures in the cameraman image. Dx highlights vertical boundaries, Dy highlights horizontal ones, and the gradient magnitude combines both.</figcaption>
+                </figure>
+
+                <figure class="figure-card wide-figure">
+                    <img src="./data/p1_2_thresholds.png" alt="Threshold comparison for gradient magnitude" />
+                    <figcaption>I tested thresholds 0.05, 0.10, 0.15, and 0.25. Lower thresholds keep more weak edges but also more texture and noise, while higher thresholds suppress noise but remove some weaker real edges.</figcaption>
+                </figure>
+            </article>
+
+            <article class="section-card">
+                <h2>1.3 Derivative of Gaussian (DoG) Filter</h2>
+
+                <div class="subsection">
+                    <h3>A. Gaussian smoothing followed by derivative</h3>
+                    <p class="body-text">Finite differences react not only to true edges but also to small high-frequency fluctuations. To reduce that effect, I first smooth the image with a 9x9 Gaussian kernel with sigma = 2, then take the same Dx and Dy derivatives. This gives cleaner responses because the blur removes a lot of the fine noise before differentiation. In symbols, <span class="equation">I<sub>blur</sub> = I * G</span>, then <span class="equation">I<sub>x</sub> = (I * G) * D<sub>x</sub></span> and <span class="equation">I<sub>y</sub> = (I * G) * D<sub>y</sub></span>, so the final magnitude is <span class="equation">|∇I<sub>blur</sub>| = sqrt(I<sub>x</sub><sup>2</sup> + I<sub>y</sub><sup>2</sup>)</span>.</p>
+
+                    <p class="body-text">I also compared thresholds 0.05, 0.10, 0.15, and 0.20 on the smoothed gradient magnitude. The comparison is mainly about the tradeoff between keeping weak edges and suppressing residual noise; I did not choose a single final threshold in the notebook.</p>
+
+                    <figure class="figure-card wide-figure">
+                        <img src="./data/p1_3_gaussian_blur.png" alt="Original image and Gaussian blur" />
+                        <figcaption>The Gaussian blur removes small local fluctuations before any derivative is taken.</figcaption>
+                    </figure>
+
+                    <figure class="figure-card wide-figure">
+                        <img src="./data/p1_3_smoothed_gradients.png" alt="Smoothed derivative responses" />
+                        <figcaption>After smoothing, the derivative images are less noisy and the main structures stand out more clearly.</figcaption>
+                    </figure>
+
+                    <figure class="figure-card wide-figure">
+                        <img src="./data/p1_3_thresholds.png" alt="Threshold comparison after Gaussian smoothing" />
+                        <figcaption>The threshold sweep shows the same low-threshold versus high-threshold tradeoff, but on cleaner gradient responses.</figcaption>
+                    </figure>
+                </div>
+
+                <div class="subsection">
+                    <h3>B. Derivative of Gaussian filter</h3>
+                    <p class="body-text">Here DoG means <strong>Derivative of Gaussian</strong>, not Difference of Gaussians. Because convolution is associative, <span class="equation">(I * G) * D<sub>x</sub> = I * (G * D<sub>x</sub>)</span> and the same holds for Dy. That means I can build the derivative-of-Gaussian filters first and apply them directly to the image instead of smoothing and differentiating in two separate steps.</p>
+
+                    <div class="snippet-grid">
+                        <div class="snippet-card">
+                            <h4>Building the DoG filters</h4>
+                            <pre><code>gaussian_1d = cv2.getGaussianKernel(9, 2)
+gaussian_filter = gaussian_1d @ gaussian_1d.T
+DoG_x = convolve2d(gaussian_filter, Dx, mode="full")
+DoG_y = convolve2d(gaussian_filter, Dy, mode="full")</code></pre>
+                        </div>
+
+                        <div class="snippet-card">
+                            <h4>Applying the DoG filters</h4>
+                            <pre><code>dog_dx = convolve2d(cameraman, DoG_x, mode="same", boundary="fill", fillvalue=0)
+dog_dy = convolve2d(cameraman, DoG_y, mode="same", boundary="fill", fillvalue=0)
+dog_gradient = np.sqrt(dog_dx ** 2 + dog_dy ** 2)</code></pre>
+                        </div>
+                    </div>
+
+                    <figure class="figure-card wide-figure">
+                        <img src="./data/p1_3_dog_filters.png" alt="Derivative of Gaussian filters" />
+                        <figcaption>The DoG X and DoG Y filters are the Gaussian-smoothed versions of the finite difference operators.</figcaption>
+                    </figure>
+
+                    <figure class="figure-card wide-figure">
+                        <img src="./data/p1_3_dog_results.png" alt="DoG filter responses" />
+                        <figcaption>Applying the DoG filters directly to the image gives edge responses that are very close to the blur-then-derivative pipeline.</figcaption>
+                    </figure>
+
+                    <figure class="figure-card wide-figure">
+                        <img src="./data/p1_3_comparison.png" alt="Comparison between Gaussian then derivative and derivative of Gaussian" />
+                        <figcaption>The two approaches produce very similar edge structures, as expected from convolution associativity. Small differences near the borders can still appear because the sequential version applies padding and cropping at an intermediate stage.</figcaption>
+                    </figure>
+                </div>
+            </article>
+
+            <article class="section-card">
+                <h2>Bells &amp; Whistles: Gradient Orientation</h2>
+                <p class="body-text">Gradient magnitude tells me how strong an edge is, but not which direction it points. For orientation, I work with the gradient vector (g<sub>x</sub>, g<sub>y</sub>) and avoid built-in angle functions. The implementation uses the tangent half-angle identity, a Taylor-series approximation of arctangent, and quadrant correction from the signs of g<sub>x</sub> and g<sub>y</sub>. Zero-gradient pixels are assigned orientation 0 because they do not have a meaningful direction.</p>
+
+                <div class="snippet-grid">
+                    <div class="snippet-card">
+                        <h4>Taylor approximation</h4>
+                        <pre><code>def atan_taylor(x, n_terms=50):
+    result = np.zeros_like(x, dtype=float)
+    for n in range(n_terms):
+        result += ((-1) ** n) * x ** (2 * n + 1) / (2 * n + 1)
+    return result</code></pre>
+                    </div>
+
+                    <div class="snippet-card">
+                        <h4>Orientation and quadrant correction</h4>
+                        <pre><code>def gradient_orientation(gx, gy):
+    a = np.abs(gx)
+    b = np.abs(gy)
+    c = np.sqrt(a ** 2 + b ** 2)
+    valid = c &gt; 0
+    t = np.zeros_like(c)
+    t[valid] = b[valid] / (c[valid] + a[valid])
+    theta0 = 2 * atan_taylor(t)
+    theta = theta0.copy()
+    theta[(gx &lt; 0) &amp; (gy &gt;= 0)] = np.pi - theta0[(gx &lt; 0) &amp; (gy &gt;= 0)]
+    theta[(gx &lt; 0) &amp; (gy &lt; 0)] = np.pi + theta0[(gx &lt; 0) &amp; (gy &lt; 0)]
+    theta[(gx &gt;= 0) &amp; (gy &lt; 0)] = 2 * np.pi - theta0[(gx &gt;= 0) &amp; (gy &lt; 0)]
+    theta[~valid] = 0
+    return theta</code></pre>
+                    </div>
+                </div>
+
+                <p class="body-text">For visualization, I map hue to orientation, saturation to 1, and value to gradient magnitude. The magnitude is scaled with the 99th percentile before clipping into [0, 1], so strong edges stay bright without a few extreme values dominating the display. The color wheel explains the angle-to-color mapping. One important geometric point is that gradient orientation is perpendicular to the visible edge; the gradient points toward the direction of fastest intensity increase.</p>
+
+                <figure class="figure-card wide-figure">
+                    <img src="./data/p1_bw_orientation.png" alt="Gradient orientation visualization and color wheel" />
+                    <figcaption>The orientation image uses cyclic color to encode direction, and the wheel shows how colors correspond to gradient directions.</figcaption>
+                </figure>
+            </article>
         </section>
     </main>
 </body>
