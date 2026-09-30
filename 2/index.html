@@ -642,16 +642,24 @@ dog_gradient = np.sqrt(dog_dx ** 2 + dog_dy ** 2)</code></pre>
 
                 <div class="subsection">
                     <h3>CS280A Bells & Whistles: Color Multiresolution Blending</h3>
-                    <p class="body-text">The multiresolution blending algorithm naturally handles color images by applying the same frequency decomposition and mask-based blending to all three RGB channels independently. The same Gaussian mask is applied spatially across all channels, so color information is preserved throughout the decomposition and reconstruction process. This is especially effective for the apple/orange and seasonal tree blends, where color differences (red vs. orange, snow vs. green foliage) are an essential part of the visual impact. The frequency-based approach ensures that color transitions smoothly at all spatial scales, contributing to the natural appearance of the blend.</p>
+                    <p class="body-text">
+  I kept the multiresolution blending in RGB instead of converting the images to grayscale first.
+  This mattered a lot for my own examples: in the sea blend, the difference between the blue and warm sky colors is part of the effect,
+  and in the winter/summer tree blend, the contrast between snow and green foliage makes the transition much more noticeable.
+  Using the same Gaussian mask across the RGB channels lets these color differences blend gradually across scales instead of changing abruptly at one boundary.
+</p>
                 </div>
             </article>
 
     
             <article class="section-card">
                 <h2>Most Important Thing I Learned</h2>
-                <p class="body-text">The most important thing I learned is how strongly spatial frequency affects image perception. Fine edges and textures are represented by high frequencies, while broader shapes and overall appearance are represented by low frequencies. Hybrid images exploit this difference directly, so the same static image appears completely different depending on viewing distance. Multiresolution blending extends this insight by allowing different frequency bands to transition over different spatial widths, enabling smooth seams that would be impossible with a single-scale approach. 
-                    What stood out to me most is that the same image can behave very differently depending on which frequencies are kept. Before this project, I mostly thought of blur and sharpening as visual effects, but now I understand them more directly in terms of low and high frequencies.
-                </p>
+                <p class="body-text">
+  The biggest thing I learned from this project is that frequency is not just an abstract representation—it changes how an image is perceived.
+  In my hybrid face example, the high-frequency face is much more obvious up close, while the low-frequency face becomes clearer from farther away.
+  I saw the same idea again in the winter/summer tree blend: fine branches and edges transition differently from the broader color and lighting changes.
+  That made the connection between frequency, scale, and visual perception much more intuitive to me.
+</p>
             </article>
         </section>
     </main>
