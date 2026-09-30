@@ -180,7 +180,9 @@
             <article class="section-card">
                 <h2>1.1 Convolutions from Scratch</h2>
                 <p class="body-text">Convolution slides a small kernel across the image. At each output location, the local patch is multiplied elementwise by the flipped kernel and summed. <br>
-                    I implemented this in two ways: one version uses four explicit loops over image and kernel indices, and the other keeps only the outer two loops while NumPy handles the patch multiplication and reduction. In both cases, I use zero padding so the outpute stays the same size as the input. The box filter acts like local averaging, so it blurs the image, and at the same time the finite-difference filters respond to changes along x and y.</p>
+                    I implemented this in two ways: one version uses four explicit loops over image and kernel indices, and the other keeps only the outer two loops while NumPy handles the patch multiplication and reduction. 
+                    In both cases, I use zero padding so the outpute stays the same size as the input. The box filter acts like local averaging, so it blurs the image, and at the same time the finite-difference filters respond to changes along x and y.
+                For a fair comparison, I used zero padding for my implementation and boundary="fill", fillvalue=0 for SciPy.</p>
 
                 <div class="snippet-grid">
                     <div class="snippet-card">
@@ -276,7 +278,8 @@
                     <p class="body-text">Finite differences react not only to true edges but also to small high-frequency fluctuations. To reduce that effect, I first smooth the image with a 9x9 Gaussian kernel with sigma = 2, then take the same Dx and Dy derivatives. This gives cleaner responses because the blur removes a lot of the fine noise before differentiation. 
                         <br>In symbols, <span class="equation">I<sub>blur</sub> = I * G</span>, then <span class="equation">I<sub>x</sub> = (I * G) * D<sub>x</sub></span> and <span class="equation">I<sub>y</sub> = (I * G) * D<sub>y</sub></span>, so the final magnitude is <span class="equation">|∇I<sub>blur</sub>| = sqrt(I<sub>x</sub><sup>2</sup> + I<sub>y</sub><sup>2</sup>)</span>.</p>
 
-                    <p class="body-text">I also compared thresholds 0.05, 0.10, 0.15, and 0.20 on the smoothed gradient magnitude. The comparison is mainly about the tradeoff between keeping weak edges and suppressing residual noise; I did not choose a single final threshold in the notebook.</p>
+                    <p class="body-text">I also compared thresholds 0.05, 0.10, 0.15, and 0.20 on the smoothed gradient magnitude. The comparison is mainly about the tradeoff between keeping weak edges and suppressing residual noise; 
+                        I chose 0.10 as a reasonable threshold because it removes much of the background noise while still keeping most of the main edges.</p>
 
                     <figure class="figure-card wide-figure">
                         <img src="./data/p1_3_gaussian_blur.png" alt="Original image and Gaussian blur" />
@@ -483,7 +486,7 @@ dog_gradient = np.sqrt(dog_dx ** 2 + dog_dy ** 2)</code></pre>
          alt="Final hybrid image"
          style="width:50%; display:block; margin:0 auto;" />
 
-                        <figcaption>Viewed up close, Derek's face dominates; viewed from a distance, Nutmeg's face becomes visible, which is really interesting to observe.</figcaption>
+                        <figcaption>Viewed up close, Nutmeg's face dominates; viewed from a distance, derek's face becomes visible, which is really interesting to observe.</figcaption>
                     </figure>
 
                     <h4>Frequency Analysis</h4>
@@ -516,7 +519,7 @@ dog_gradient = np.sqrt(dog_dx ** 2 + dog_dy ** 2)</code></pre>
                     <figure class="figure-card wide-figure">
                         <img src="./data/p2_2_custom1.png" alt="Final custom hybrid 1" style="width:50%; display:block; margin:0 auto;" />
                       <figcaption>
-  Viewed up close, my boyfriend's face dominates, while from a distance, my face becomes more visible.
+  Viewed up close, my face dominates, while from a distance, my boyfriend's face becomes more visible.
   <br>
   There is some misalignment from the rotation, which creates slight edge noise, but the hybrid effect is still quite noticeable.
 </figcaption>
@@ -558,8 +561,7 @@ dog_gradient = np.sqrt(dog_dx ** 2 + dog_dy ** 2)</code></pre>
                     <h3>Laplacian Stacks</h3>
                     <p class="body-text">Each Laplacian level L<sub>i</sub> isolates a specific frequency band by computing the difference between consecutive Gaussian levels: L<sub>i</sub> = G<sub>i</sub> - G<sub>i+1</sub>. 
                         This separates the image into a set of bandpass filters, each capturing detail at a particular scale. 
-                        The final low-frequency residual (represented as the lowest-resolution Gaussian) captures the remaining coarse structure.</p>
-
+                        Each frequency band is blended according to a mask that is also decomposed into frequency bands.
                     <figure class="figure-card wide-figure">
                         <img src="./data/p2_3_laplacian_stacks.png" alt="Laplacian stack visualization for apple and orange" />
                         <figcaption>Laplacian frequency bands (L<sub>0</sub> through L<sub>4</sub>) for both images, with the residual low-frequency component shown separately. 
@@ -598,7 +600,8 @@ dog_gradient = np.sqrt(dog_dx ** 2 + dog_dy ** 2)</code></pre>
 
                     <figure class="figure-card wide-figure">
                         <img src="./data/p2_4_figure342.png" alt="Figure 3.42 recreation: multiresolution blending process" width="50%" display:block; margin:0 auto;"/>
-                        <figcaption>Detailed visualization of the blending process at multiple frequency levels. Top rows show apple and orange contributions, middle rows show the Gaussian mask stack, and bottom rows show the blended results at each scale.</figcaption>
+                        <figcaption>Detailed visualization of the blending process at multiple frequency levels. 
+                            The first three rows show the apple contribution, orange contribution, and their blended result at Laplacian levels 0, 2, and 4. The last row shows the reconstructed apple, orange, and final Oraple.</figcaption>
                     </figure>
                 </div>
 
@@ -628,7 +631,8 @@ dog_gradient = np.sqrt(dog_dx ** 2 + dog_dy ** 2)</code></pre>
 
                 <div class="subsection">
                     <h3>My Favorite: Laplacian Stack Breakdown</h3>
-                    <p class="body-text">The seasonal tree blend is my favorite result because it beautifully demonstrates how multiresolution blending handles both fine and coarse features. At the finest scale, the triangular mask is sharp, creating a precise transition for high-frequency details like leaves and texture. As the scale becomes coarser, the Gaussian-blurred mask widens, allowing the lower-frequency components (overall color, lighting, and structure) to transition over a wider region. This results in a natural blend where fine details transition over a narrow seam while overall appearance transitions smoothly across a wider area.</p>
+                    <p class="body-text">I chose the seasonal tree blend as my favorite because the effect of the mask is easy to see at different frequency levels.
+                        At the finest scale, the triangular mask is sharp, creating a precise transition for high-frequency details like leaves and texture. As the scale becomes coarser, the Gaussian-blurred mask widens, allowing the lower-frequency components (overall color, lighting, and structure) to transition over a wider region. This results in a natural blend where fine details transition over a narrow seam while overall appearance transitions smoothly across a wider area.</p>
 
                     <figure class="figure-card wide-figure">
                         <img src="./data/p2_4_favorite_laplacian_stack.png" alt="Laplacian stack visualization for seasonal tree blend" />
@@ -645,7 +649,9 @@ dog_gradient = np.sqrt(dog_dx ** 2 + dog_dy ** 2)</code></pre>
     
             <article class="section-card">
                 <h2>Most Important Thing I Learned</h2>
-                <p class="body-text">The most important thing I learned is how strongly spatial frequency affects image perception. Fine edges and textures are represented by high frequencies, while broader shapes and overall appearance are represented by low frequencies. Hybrid images exploit this difference directly, so the same static image appears completely different depending on viewing distance. Multiresolution blending extends this insight by allowing different frequency bands to transition over different spatial widths, enabling smooth seams that would be impossible with a single-scale approach. This frequency-based thinking is fundamental to image processing and explains why common techniques like blurring, sharpening, and seam removal are more sophisticated than they initially appear.</p>
+                <p class="body-text">The most important thing I learned is how strongly spatial frequency affects image perception. Fine edges and textures are represented by high frequencies, while broader shapes and overall appearance are represented by low frequencies. Hybrid images exploit this difference directly, so the same static image appears completely different depending on viewing distance. Multiresolution blending extends this insight by allowing different frequency bands to transition over different spatial widths, enabling smooth seams that would be impossible with a single-scale approach. 
+                    What stood out to me most is that the same image can behave very differently depending on which frequencies are kept. Before this project, I mostly thought of blur and sharpening as visual effects, but now I understand them more directly in terms of low and high frequencies.
+                </p>
             </article>
         </section>
     </main>
