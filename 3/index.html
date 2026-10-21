@@ -253,18 +253,15 @@
                 <p>
                     I started from the saved <em>t</em> = 0.50 noisy image and performed 25 Euler steps with <em>h</em> = 0.02, reaching <em>t</em> = 1. At every step, the model predicts a new velocity and updates the image by <em>x<sub>t+h</sub> = x<sub>t</sub> + h v<sub>θ</sub>(x<sub>t</sub>,t,c)</em>. Compared with the same-input Gaussian blur and one-step prediction, the iterative result recovers clearer edges and is visually closer to the original. Unlike the one-step estimate, Euler sampling can adjust the direction as the image changes.
                 </p>
-                <div class="figure-grid three" style="grid-template-columns: 1fr;">
+                <div class="figure-grid two" style="grid-template-columns: 1fr;">
     <figure class="figure">
         <img src="data/p1/1.51.png" alt="Euler denoising trajectory from t 0.50 to t 1.00" />
         <figcaption>Figure 1.5a — Iterative denoising trajectory, from <em>t</em> = 0.50 to 1.00.</figcaption>
     </figure>
-    <figure class="figure">
-        <img src="data/p1/1.52.png" alt="Euler denoising trajectory from t 0.50 to t 1.00" />
-        <figcaption>Figure 1.5b — Iterative denoising trajectory, from <em>t</em> = 0.50 to 1.00.</figcaption>
-    </figure>
+
     <figure class="figure">
         <img src="data/p1/1.53.png" alt="Comparison of original, blur, one-step, and Euler denoising" />
-        <figcaption>Figure 1.5c — Original, blurred baseline, one-step estimate, and 25-step Euler result.</figcaption>
+        <figcaption>Figure 1.5b — Original, blurred baseline, one-step estimate, and 25-step Euler result.</figcaption>
     </figure>
 </div>
 
