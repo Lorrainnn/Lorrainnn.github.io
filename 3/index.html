@@ -3,22 +3,756 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Project 3</title>
+    <title>CS180/CS280A Project 3</title>
     <link rel="stylesheet" href="../styles/project.css" />
+    <style>
+        .report {
+            display: grid;
+            gap: 22px;
+        }
+
+        .section-card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+            padding: 22px;
+        }
+
+        .section-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.35rem;
+        }
+
+        .section-card h3 {
+            margin: 22px 0 8px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border);
+            font-size: 1.08rem;
+        }
+
+        .section-card h3:first-of-type {
+            margin-top: 16px;
+        }
+
+        .section-card h4 {
+            margin: 16px 0 8px;
+            font-size: 0.98rem;
+        }
+
+        .section-card p,
+        .section-card li {
+            color: #334155;
+            line-height: 1.65;
+        }
+
+        .section-card p {
+            margin: 0 0 12px;
+        }
+
+        .section-card ul {
+            margin: 8px 0 12px;
+            padding-left: 22px;
+        }
+
+        .formula {
+            margin: 12px 0 16px;
+            padding: 10px 14px;
+            border-left: 3px solid var(--primary);
+            background: #f5f8ff;
+            font-family: Georgia, serif;
+            text-align: center;
+        }
+
+        .figure {
+            margin: 14px 0 0;
+        }
+
+        .figure img {
+            display: block;
+            width: 100%;
+            max-height: 520px;
+            object-fit: contain;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #fafafa;
+        }
+
+        .figure figcaption {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .figure-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 14px;
+        }
+
+        .figure-grid.three {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .figure-grid .figure {
+            margin: 0;
+        }
+
+        .figure-grid .figure img {
+            max-height: 360px;
+        }
+
+        .hybrid-views {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 96px;
+            gap: 10px;
+            align-items: start;
+        }
+
+        .hybrid-views img.reduced {
+            width: 96px;
+            height: 96px;
+            object-fit: cover;
+        }
+
+        .toc {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+            margin: 12px 0 0;
+        }
+
+        .toc a {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .note {
+            color: var(--muted) !important;
+            font-size: 0.92rem;
+        }
+
+        @media (max-width: 680px) {
+            .figure-grid,
+            .figure-grid.three {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media print {
+            .section-card {
+                box-shadow: none;
+            }
+        }
+    </style>
 </head>
 <body>
     <main class="container">
         <header class="header">
             <div class="topline">
-                <p class="badge">CS280 Project</p>
+                <p class="badge">CS180 / CS280A</p>
                 <a class="home-link" href="../index.html">Back to Main</a>
             </div>
-            <h1>Project 3</h1>
-            <p class="desc">Template page with reusable header. Add your project content in the blank area below.</p>
+            <h1>Project 3: Flow Models and Flow Matching</h1>
+            <p class="desc">
+                Flow matching, classifier-free guidance, image editing, visual anagrams,
+                and hybrid images using the pretrained PixNerd model, plus flow matching from scratch on MNIST.
+            </p>
+            <nav class="toc" aria-label="Report sections">
+                <a href="#part1">Part 1</a>
+                <a href="#part2">Part 2</a>
+                <a href="#part3">Part 3</a>
+                <a href="#bells">Bells &amp; Whistles</a>
+                <a href="#part1b">Part B: Part 1</a>
+                <a href="#part2b">Part B: Part 2</a>
+                <a href="#bellsb">Part B Bells &amp; Whistles</a>
+            </nav>
         </header>
 
-        <section class="content-placeholder">
-            <p>Content placeholder.</p>
+        <section class="report">
+            <article class="section-card" id="part1">
+                <h2>Part 1: Visualizing Training and Sampling</h2>
+                <p>
+                    I used the matcha drink image for Sections 1.1–1.5. The flow-matching
+                    convention is
+                    <span class="formula">x<sub>t</sub> = (1 − t)ε + t x<sub>1</sub>, &nbsp; ε ~ N(0, I).</span>
+                    Thus, small <em>t</em> values are mostly noise and values near one retain
+                    more of the clean image. The same sampled noise was reused across the
+                    comparisons.
+                </p>
+
+                <h3>1.1 Constructing Noisy Training Inputs</h3>
+                <p>
+                    The forward interpolation gradually reveals the matcha image as
+                    <em>t</em> increases. The figure shows the original image and the
+                    saved inputs at <em>t</em> = 0.25, 0.50, and 0.75.
+                </p>
+                <figure class="figure">
+                    <img src="data/p1/1.1.png" alt="Original matcha image and noisy inputs at t 0.25, 0.5, and 0.75" />
+                    <figcaption>Figure 1.1 — Forward-process inputs at the three required times.</figcaption>
+                </figure>
+
+                <h3>1.2 Classical Denoising</h3>
+                <p>
+                    As a non-learned baseline, I first restored the image amplitude by
+                    dividing by <em>t</em>, then applied Gaussian blur. Stronger blur removes
+                    more noise but also removes edges and texture. The selected blur strengths
+                    are shown in each panel.
+                </p>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/p1/1.21.png" alt="Gaussian denoising at t 0.25 with sigma 16" />
+                        <figcaption>Figure 1.2a — <em>t</em> = 0.25, blur σ = 16.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/1.22.png" alt="Gaussian denoising at t 0.5 with sigma 8" />
+                        <figcaption>Figure 1.2b — <em>t</em> = 0.50, blur σ = 8.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/1.23.png" alt="Gaussian denoising at t 0.75 with sigma 4" />
+                        <figcaption>Figure 1.2c — <em>t</em> = 0.75, blur σ = 4.</figcaption>
+                    </figure>
+                </div>
+
+                <h3>1.3 One-Step Denoising</h3>
+                <p>
+                    Using the prompt <code>a high quality photo</code>, I predicted one
+                    velocity and extrapolated to the clean endpoint with
+                    <span class="formula">x̂<sub>1</sub> = x<sub>t</sub> + (1 − t)v<sub>θ</sub>(x<sub>t</sub>, t, c).</span>
+                    One step recovers the overall cup shape, but the result remains softer
+                    than the original because the velocity field changes along the trajectory.
+                </p>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/p1/1.31.png" alt="One-step denoising at t 0.25" />
+                        <figcaption>Figure 1.3a — <em>t</em> = 0.25.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/1.32.png" alt="One-step denoising at t 0.5" />
+                        <figcaption>Figure 1.3b — <em>t</em> = 0.50.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/1.33.png" alt="One-step denoising at t 0.75" />
+                        <figcaption>Figure 1.3c — <em>t</em> = 0.75.</figcaption>
+                    </figure>
+                </div>
+
+                <h3>1.4 Visualizing Velocity</h3>
+                <p>
+                    I compared the predicted update with the exact update
+                    x<sub>1</sub> − x<sub>t</sub> implied by the saved noise and original image.
+                    The last panel in each row is the per-pixel RGB RMS error. As the input
+                    contains more image structure at larger <em>t</em>, the predicted and
+                    ground-truth updates become easier to compare visually.
+                </p>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/p1/1.41.png" alt="Velocity visualization at t 0.25" />
+                        <figcaption>Figure 1.4a — Predicted update, ground truth, and error at <em>t</em> = 0.25.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/1.42.png" alt="Velocity visualization at t 0.5" />
+                        <figcaption>Figure 1.4b — Predicted update, ground truth, and error at <em>t</em> = 0.50.</figcaption>
+                    </figure>
+                </div>
+                <figure class="figure">
+                    <img src="data/p1/1.43.png" alt="Velocity visualization at t 0.75" />
+                    <figcaption>Figure 1.4c — Predicted update, ground truth, and error at <em>t</em> = 0.75.</figcaption>
+                </figure>
+
+                <h3>1.5 Iterative Denoising with Euler Sampling</h3>
+                <p>
+                    I integrated the learned velocity field from the saved
+                    <em>t</em> = 0.50 input using Euler steps of size <em>h</em> = 0.02,
+                    for 25 updates. Recomputing the velocity after each update produces a
+                    sharper reconstruction than the one-step estimate and is closer to the
+                    original than the blur baseline.
+                </p>
+                <figure class="figure">
+                    <img src="data/p1/1.53.png" alt="Comparison of original, blur, one-step, and Euler denoising" />
+                    <figcaption>Figure 1.5 — Original, blurred baseline, one-step estimate, and 25-step Euler result.</figcaption>
+                </figure>
+
+                <h3>1.6 Generating Images from Noise</h3>
+                <p>
+                    Starting from five independent Gaussian noise tensors, I sampled from
+                    <em>t</em> = 0 to 1 with 50 Euler updates and the same generic prompt.
+                    The results show that the model can produce different photographic
+                    subjects from the same text prompt, but their composition and subject
+                    identity vary substantially with the random seed.
+                </p>
+                <figure class="figure">
+                    <img src="data/p1/1.6.png" alt="Five images generated from noise with seeds 180 through 184" />
+                    <figcaption>Figure 1.6 — Five samples for seeds 180–184 using “a high quality photo”.</figcaption>
+                </figure>
+            </article>
+
+            <article class="section-card" id="part2">
+                <h2>Part 2: Conditional Generation and Guidance</h2>
+                <h3>2.1 Classifier-Free Guidance (CFG)</h3>
+                <p>
+                    I implemented classifier-free guidance by evaluating the same noisy
+                    state with the conditional prompt and the empty prompt, then combining
+                    the velocities:
+                    <span class="formula">v<sub>cfg</sub> = v<sub>c</sub> + w(v<sub>c</sub> − v<sub>u</sub>).</span>
+                    I used <em>w</em> = 7, step size 0.02, and the same initial noises as
+                    Section 1.6. Compared with ordinary conditional sampling, guidance
+                    produces more consistent portrait-like outputs and stronger alignment
+                    with the intended “high quality photo” prompt, while reducing diversity.
+                </p>
+                <figure class="figure">
+                    <img src="data/p1/2.1.png" alt="Five classifier-free guidance samples with weight 7" />
+                    <figcaption>Figure 2.1 — CFG samples for seeds 180–184, with <em>w</em> = 7.</figcaption>
+                </figure>
+            </article>
+
+            <article class="section-card" id="part3">
+                <h2>Part 3: Creative Applications</h2>
+                <p>
+                    Unless noted otherwise, the creative experiments use Euler step size
+                    0.02, CFG weight 7, and an empty prompt for the unconditional branch.
+                    For image-to-image editing, smaller starting times allow larger edits,
+                    while larger starting times preserve more of the input.
+                </p>
+
+                <h3>3.1 Image-to-Image Editing</h3>
+                <p>
+                    With the prompt <code>a high quality photo</code>, I edited the
+                    Campanile and two personal images at the seven required starting times:
+                    0.02, 0.04, 0.06, 0.10, 0.14, 0.25, and 0.50. The Campanile becomes
+                    recognizable only after enough of its structure survives the initial
+                    noise. The matcha and Nessie examples show the same transition from
+                    newly generated content to faithful reconstruction.
+                </p>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/p1/3.1campile.png" alt="Campanile image-to-image edits across seven starting times" />
+                        <figcaption>Figure 3.1a — Campanile edit sweep.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/3.1matcha.png" alt="Matcha image-to-image edits across seven starting times" />
+                        <figcaption>Figure 3.1b — Matcha image edit sweep.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/3.1nessie.png" alt="Nessie image-to-image edits across seven starting times" />
+                        <figcaption>Figure 3.1c — Nessie image edit sweep.</figcaption>
+                    </figure>
+                </div>
+
+                <h4>Editing Hand-Drawn and Web Images</h4>
+                <p>
+                    I repeated the same procedure for one downloaded web image and two
+                    hand-drawn inputs. The model projects the non-photorealistic drawings
+                    toward photographic-looking images at low starting times, while the
+                    original drawing reappears as the starting time increases.
+                </p>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/p1/3.1webguineapig.png" alt="Web guinea pig image edited across seven starting times" />
+                        <figcaption>Figure 3.1d — Downloaded guinea pig image.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/3.1handdraw1.png" alt="First hand-drawn image edited across seven starting times" />
+                        <figcaption>Figure 3.1e — First hand-drawn input.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/3.1handdraw2.png" alt="Second hand-drawn image edited across seven starting times" />
+                        <figcaption>Figure 3.1f — Second hand-drawn input.</figcaption>
+                    </figure>
+                </div>
+
+                <h3>3.2 Text-Guided Image Editing</h3>
+                <p>
+                    I replaced the generic prompt with a new prompt for each source:
+                    a magical wizard tower for the Campanile, a glowing emerald potion for
+                    the matcha image, and a Sailor Moon-style green Nessie plush for the
+                    Nessie image. The prompt has the strongest effect at low starting times;
+                    at high starting times, the source image controls the composition.
+                </p>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/p1/3.2campnile.png" alt="Text-guided Campanile edits using a magical wizard tower prompt" />
+                        <figcaption>Figure 3.2a — Campanile → “a magical wizard tower with glowing windows under a purple starry sky.”</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/3.2matcha.png" alt="Text-guided matcha edits using a magical potion prompt" />
+                        <figcaption>Figure 3.2b — Matcha → “a glowing emerald green wizard potion in a glass cup, swirling magical mist and sparkling stars, on an alchemist's table.”</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/3.2nessie.png" alt="Text-guided Nessie edits using a Sailor Moon prompt" />
+                        <figcaption>Figure 3.2c — Nessie → “a cute green Nessie plush dinosaur from Apex Legends dressed as a Sailor Moon magical girl, wearing a sailor outfit, pink bow and tiara, holding a magic wand.”</figcaption>
+                    </figure>
+                </div>
+
+                <h3>3.3 Visual Anagrams</h3>
+                <p>
+                    I averaged two CFG velocity estimates at every Euler step, rotating
+                    the second estimate back before averaging. The two outputs below are
+                    designed to change interpretation when viewed upside down: a hamburger
+                    / Swiss mountain village pair and a cat / mouse pair.
+                </p>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/p1/3.3burger.png" alt="Visual anagram of a hamburger and a Swiss mountain village" />
+                        <figcaption>Figure 3.3a — “a detailed illustration of a hamburger” / “a detailed illustration of a Swiss mountain village.”</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/3.3cat.png" alt="Visual anagram of a cat and a mouse" />
+                        <figcaption>Figure 3.3b — “an illustration of a cat” / “an illustration of a mouse.”</figcaption>
+                    </figure>
+                </div>
+
+                <h3>3.4 Hybrid Images</h3>
+                <p>
+                    For hybrid sampling, I combined low frequencies from one CFG velocity
+                    with high frequencies from a second prediction:
+                    <span class="formula">v = lowpass(v<sub>a</sub>) + v<sub>b</sub> − lowpass(v<sub>b</sub>).</span>
+                    The low-frequency prompt determines the distant reading, while the
+                    high-frequency prompt determines the close-up detail. The notebook uses
+                    a Gaussian low-pass filter with σ = 16 and kernel size 265.
+                </p>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <div class="hybrid-views">
+                            <img src="data/p1/3.41.png" alt="Full-size hybrid image generated from lithograph prompts" />
+                            <img class="reduced" src="data/p1/3.41.png" alt="Reduced view of the same hybrid image" />
+                        </div>
+                        <figcaption>Figure 3.4a — Lithograph hybrid: distant “a lithograph of a bumblebee”; close “a lithograph of a fruit arrangement.”</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <div class="hybrid-views">
+                            <img src="data/p1/3.42.png" alt="Full-size hybrid image combining a skull and waterfall prompt" />
+                            <img class="reduced" src="data/p1/3.42.png" alt="Reduced view of the same skull and waterfall hybrid" />
+                        </div>
+                        <figcaption>Figure 3.4b — Lithograph hybrid: distant “a lithograph of a skull”; close “a lithograph of a waterfall.”</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <div class="hybrid-views">
+                            <img src="data/p1/3.43.png" alt="Full-size additional hybrid image result" />
+                            <img class="reduced" src="data/p1/3.43.png" alt="Reduced view of the same additional hybrid image" />
+                        </div>
+                        <figcaption>Figure 3.4c — Additional lithograph hybrid attempt from the same notebook experiment.</figcaption>
+                    </figure>
+                </div>
+                <p class="note">
+                    The hybrid outputs are shown at their saved full resolution. Viewing them
+                    at different sizes changes which frequency band is most noticeable.
+                </p>
+            </article>
+
+            <article class="section-card" id="bells">
+                <h2>Bells &amp; Whistles</h2>
+                <p>
+                    These experiments address the required CS280A extensions in addition to
+                    the main Part A sections.
+                </p>
+
+                <h3>Additional Visual Anagrams</h3>
+                <p>
+                    I implemented two additional transformations beyond the upside-down
+                    spatial flip: 90-degree rotation and color inversion. The rotation
+                    experiment uses a duck / rabbit pair. The color-inversion experiment
+                    uses an owl / frog pair and a heart / campfire pair.
+                </p>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/p1/bwr_t1_duck.png" alt="Additional visual anagram using a 90 degree rotation" />
+                        <figcaption>Figure BW1 — 90°-rotation anagram: “a duck” / “a rabbit.”</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/bw_t2_owl.png" alt="Color inversion visual anagram of an owl and a frog" />
+                        <figcaption>Figure BW2 — Color-inversion anagram: owl / frog.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/bw_t2_heart.png" alt="Color inversion visual anagram of a heart and a campfire" />
+                        <figcaption>Figure BW3 — Color-inversion anagram: heart / campfire.</figcaption>
+                    </figure>
+                </div>
+
+                <h3>Course Logo</h3>
+                <p>
+                    I also used text-conditioned image-to-image generation to create a
+                    course logo with Berkeley blue and gold colors, a camera-lens motif,
+                    and a small tower silhouette.
+                </p>
+                <figure class="figure">
+                    <img src="data/p1/course_logo.png" alt="Generated blue and gold computer vision course logo" />
+                    <figcaption>Figure BW4 — Generated course logo.</figcaption>
+                </figure>
+
+                <h3>Optional Prompt-Revision Experiment</h3>
+                <p>
+                    As an additional experiment, I compared an underspecified prompt with a
+                    more descriptive prompt for a rocket and a pepper jar. Adding shape and
+                    structural details makes the generated objects more recognizable.
+                </p>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/p1/bw_t1_rocket_fail.png" alt="Weakly specified rocket and pepper jar prompts" />
+                        <figcaption>Figure BW5a — Results from short object prompts.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p1/bw_t1_rocket_improve.png" alt="More descriptive rocket and pepper jar prompts" />
+                        <figcaption>Figure BW5b — Results after adding structural descriptions.</figcaption>
+                    </figure>
+                </div>
+            </article>
+
+            <article class="section-card" id="part1b">
+                <h2>Part 1: Training a Single-Step Denoising UNet</h2>
+                <h3>1.1 Implementing the UNet</h3>
+                <p>
+                    I implemented the supplied composed operations using convolution,
+                    downsampling, upsampling, average-pooling, and channel concatenation.
+                    The unconditional UNet uses hidden dimension <code>D = 128</code> for
+                    this part. The encoder reduces the 28×28 input to a 7×7 bottleneck;
+                    the decoder upsamples it while concatenating the encoder features as
+                    skip connections. A final convolution maps the features back to one
+                    grayscale channel.
+                </p>
+
+                <h3>1.2 Using the UNet to Train a Denoiser</h3>
+                <p>
+                    For a clean MNIST image <em>x</em>, I formed the noisy input
+                    <span class="formula">z = x + σ ε</span>, where
+                    <span class="formula">ε ~ N(0, I)</span>, and trained the network with
+                    mean-squared error to predict <em>x</em>.
+                </p>
+                <figure class="figure">
+                    <img src="data/p2/1.2.png" alt="MNIST noising process for seven sigma values" />
+                    <figcaption>Figure 1.2 — The same digit with σ = 0.0, 0.2, 0.4, 0.5, 0.6, 0.8, and 1.0.</figcaption>
+                </figure>
+
+                <h3>1.2.1 Training</h3>
+                <p>
+                    I used batch size 256, Adam with learning rate 10<sup>−4</sup>, and
+                    trained for five epochs. Each batch received newly sampled noise at
+                    σ = 0.5, so the model did not memorize one fixed noisy version of a
+                    training image. The loss decreases rapidly at the beginning and then
+                    levels off over the remaining iterations.
+                </p>
+                <figure class="figure">
+                    <img src="data/p2/1.2.1trainloss.png" alt="Single-step denoising training loss" />
+                    <figcaption>Figure 1.2.1 — Training loss for the σ = 0.5 denoiser.</figcaption>
+                </figure>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/p2/denoising_epoch_1.png" alt="Single-step denoising outputs after epoch 1" />
+                        <figcaption>Figure 1.2.1b — Held-out denoising results after Epoch 1.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p2/denoising_epoch_5.png" alt="Single-step denoising outputs after epoch 5" />
+                        <figcaption>Figure 1.2.1c — Held-out denoising results after Epoch 5.</figcaption>
+                    </figure>
+                </div>
+
+                <h3>1.2.2 Out-of-Distribution Testing</h3>
+                <p>
+                    I evaluated the trained σ = 0.5 denoiser on the same image at all
+                    seven noise levels. At low noise the input already retains the digit
+                    structure; as σ increases beyond the training value, the output is
+                    increasingly difficult to reconstruct because the model has not been
+                    trained on that input distribution.
+                </p>
+                <figure class="figure">
+                    <img src="data/p2/1.2.2.png" alt="Out-of-distribution denoising results for seven noise levels" />
+                    <figcaption>Figure 1.2.2 — Test-time denoising across σ = 0.0 through 1.0.</figcaption>
+                </figure>
+
+                <h3>1.2.3 Denoising Pure Noise</h3>
+                <p>
+                    I repeated the training procedure with independent Gaussian noise as
+                    the input instead of a noisy digit, while keeping the clean MNIST
+                    image as the target. The outputs after one and five epochs tend
+                    toward broad digit-like intensity patterns rather than consistently
+                    identifying a particular digit. This is expected from an MSE
+                    objective: when the input contains no information about which
+                    training example was selected, the pointwise optimum is close to the
+                    average of the possible targets.
+                </p>
+                <figure class="figure">
+                    <img src="data/p2/1.2.3trainloss.png" alt="Pure-noise denoising training loss" />
+                    <figcaption>Figure 1.2.3a — Training loss when the input is pure Gaussian noise.</figcaption>
+                </figure>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/p2/1.2.3epoch1.png" alt="Pure-noise denoising outputs after epoch 1" />
+                        <figcaption>Figure 1.2.3b — Outputs after Epoch 1.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p2/1.2.3epoch5.png" alt="Pure-noise denoising outputs after epoch 5" />
+                        <figcaption>Figure 1.2.3c — Outputs after Epoch 5.</figcaption>
+                    </figure>
+                </div>
+            </article>
+
+            <article class="section-card" id="part2b">
+                <h2>Part 2: Training a Flow Matching Model</h2>
+                <p>
+                    Flow matching interpolates between Gaussian noise
+                    <span class="formula">x<sub>0</sub></span> and a clean image
+                    <span class="formula">x<sub>1</sub></span> with
+                    <span class="formula">x<sub>t</sub> = (1−t)x<sub>0</sub> + tx<sub>1</sub></span>.
+                    The target is the velocity
+                    <span class="formula">x<sub>1</sub> − x<sub>0</sub></span>, not the
+                    clean image itself.
+                </p>
+
+                <h3>2.1 Adding Time Conditioning to UNet</h3>
+                <p>
+                    The time-conditioned model uses the same encoder-decoder and skip
+                    connections, with two FCBlocks projecting the scalar time
+                    <em>t</em> to feature maps. These projections are injected in the
+                    decoder bottleneck and first upsampling block. During training the
+                    model predicts the velocity field at a randomly sampled time.
+                </p>
+
+                <h3>2.2 Training the UNet</h3>
+                <p>
+                    I trained a fresh time-conditioned model with <code>D = 64</code>,
+                    batch size 64, Adam at initial learning rate 10<sup>−2</sup>, and
+                    10 epochs. After each epoch I applied an exponential scheduler whose
+                    multiplicative factor is <code>0.1^(1/10)</code>. The loss is the MSE
+                    between the predicted and target velocities.
+                </p>
+                <figure class="figure">
+                    <img src="data/p2/2.2trainloss.png" alt="Time-conditioned flow matching training loss" />
+                    <figcaption>Figure 2.2 — Time-conditioned flow-matching loss over optimization steps.</figcaption>
+                </figure>
+
+                <h3>2.3 Sampling from the UNet</h3>
+                <p>
+                    Starting from Gaussian noise at time zero, I used Euler integration:
+                    at each step the current image is updated by the predicted velocity
+                    multiplied by the step size. The samples become more digit-like as
+                    training progresses, although the time-only model remains less
+                    controlled than the class-conditioned model.
+                </p>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/p2/2.3epoch1.png" alt="Time-conditioned samples after epoch 1" />
+                        <figcaption>Figure 2.3a — Epoch 1.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p2/2.3epoch5.png" alt="Time-conditioned samples after epoch 5" />
+                        <figcaption>Figure 2.3b — Epoch 5.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p2/2.3epoch10.png" alt="Time-conditioned samples after epoch 10" />
+                        <figcaption>Figure 2.3c — Epoch 10.</figcaption>
+                    </figure>
+                </div>
+
+                <h3>2.4 Adding Class Conditioning to UNet</h3>
+                <p>
+                    I added a one-hot class vector for the ten MNIST digits and projected
+                    it with two additional FCBlocks. During training, the class vector is
+                    dropped with probability 0.1, which provides the unconditional branch
+                    needed for classifier-free guidance. The class-conditioned model has
+                    the same time-conditioning pathway and predicts the same velocity
+                    target.
+                </p>
+
+                <h3>2.5 Training the UNet</h3>
+                <p>
+                    The class-conditioned model was trained independently for 10 epochs
+                    with <code>D = 64</code>, batch size 64, Adam at 10<sup>−2</sup>,
+                    class-drop probability 0.1, and the same exponential learning-rate
+                    schedule. The scheduler and no-scheduler loss curves are shown
+                    together with the sampling comparison in Section 2.6.
+                </p>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/p2/2.5schedualer.png" alt="Class-conditioned scheduled training loss" />
+                        <figcaption>Figure 2.5a — Class-conditioned training with the exponential scheduler.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p2/2.5noschedualer.png" alt="Class-conditioned no-scheduler training loss" />
+                        <figcaption>Figure 2.5b — Independent no-scheduler run with constant learning rate 10<sup>−2</sup>.</figcaption>
+                    </figure>
+                </div>
+
+                <h3>2.6 Sampling from the UNet</h3>
+                <p>
+                    For each saved checkpoint I generated four instances of every digit,
+                    preserving the 0–9 label order in the grid. Sampling used 300 Euler
+                    steps, guidance scale γ = 5.0, and the fixed sampling seed from the
+                    notebook. Classifier-free guidance combines the unconditional and
+                    conditional velocities as
+                    <span class="formula">v<sub>u</sub> + γ(v<sub>c</sub> − v<sub>u</sub>)</span>.
+                </p>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/p2/2.1se1.png" alt="Scheduled class-conditioned samples at epoch 1" />
+                        <figcaption>Figure 2.6a — Scheduler, Epoch 1.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p2/2.1se5.png" alt="Scheduled class-conditioned samples at epoch 5" />
+                        <figcaption>Figure 2.6b — Scheduler, Epoch 5.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p2/2.1se10.png" alt="Scheduled class-conditioned samples at epoch 10" />
+                        <figcaption>Figure 2.6c — Scheduler, Epoch 10.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p2/2.1nse1.png" alt="No-scheduler class-conditioned samples at epoch 1" />
+                        <figcaption>Figure 2.6d — No scheduler, Epoch 1.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p2/2.1nse5.png" alt="No-scheduler class-conditioned samples at epoch 5" />
+                        <figcaption>Figure 2.6e — No scheduler, Epoch 5.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p2/2.1nse10.png" alt="No-scheduler class-conditioned samples at epoch 10" />
+                        <figcaption>Figure 2.6f — No scheduler, Epoch 10.</figcaption>
+                    </figure>
+                </div>
+                <p>
+                    The loss curves show that both runs settle quickly. The scheduler
+                    reduces the learning rate over training, while the comparison keeps
+                    it fixed; the generated grids provide the visual check of whether
+                    removing that schedule preserves recognizable, class-specific digits.
+                </p>
+            </article>
+
+            <article class="section-card" id="bellsb">
+                <h2>Part 3: Bells &amp; Whistles</h2>
+                <h3>CS280A required experiment: a better time-conditioned-only UNet</h3>
+                <p>
+                    I trained a new time-conditioned-only model from scratch instead of
+                    continuing from the original Epoch 10 checkpoint. The model kept
+                    <code>D = 64</code>, batch size 64, and initial learning rate
+                    10<sup>−2</sup>, but used a 20-epoch schedule with an exponential
+                    scheduler whose factor is <code>0.1^(1/20)</code>. The new checkpoints
+                    were sampled at Epoch 10 and Epoch 20.
+                </p>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/p2/2.3epoch10.png" alt="Original time-conditioned-only samples after epoch 10" />
+                        <figcaption>Figure 3a — Original time-conditioned-only model, Epoch 10.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p2/bw_epoch10.png" alt="Extended time-conditioned model samples at epoch 10" />
+                        <figcaption>Figure 3b — Fresh extended-schedule model, Epoch 10.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/p2/bw_epoch20.png" alt="Extended time-conditioned model samples at epoch 20" />
+                        <figcaption>Figure 3c — Fresh extended-schedule model, Epoch 20.</figcaption>
+                    </figure>
+                </div>
+                <p>
+                    The longer run gives the time-only model additional optimization time,
+                    and the Epoch 20 grid is the final comparison point. Compared with the
+                    original Epoch 10 samples, the extended-run samples remain varied but
+                    show clearer digit-like strokes by Epoch 20. This supports a modest
+                    qualitative benefit from the longer schedule, although the result is
+                    still less controlled than the class-conditioned model.
+                </p>
+            </article>
+
         </section>
     </main>
 </body>
