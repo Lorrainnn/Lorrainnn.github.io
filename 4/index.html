@@ -93,13 +93,13 @@
 
         .figure-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: 1fr;
             gap: 16px;
             margin-top: 14px;
         }
 
         .figure-grid.three {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: 1fr;
         }
 
         .figure-grid .figure {
@@ -145,12 +145,6 @@
             background: #f8fafc;
         }
 
-        @media (max-width: 680px) {
-            .figure-grid,
-            .figure-grid.three {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
@@ -161,15 +155,13 @@
                 <a class="home-link" href="../index.html">Back to Main</a>
             </div>
             <h1>Project 4A: Image Warping and Mosaicing</h1>
-            <p class="desc">
-                Homographies, image rectification, planar mosaics, and cylindrical projection using my building, indoor, and shelf photos.
-            </p>
+
             <nav class="toc" aria-label="Report sections">
                 <a href="#a1">A.1 Photos</a>
                 <a href="#a2">A.2 Homographies</a>
                 <a href="#a3">A.3 Rectification</a>
                 <a href="#a4">A.4 Mosaics</a>
-                <a href="#a5">A.5 Cylindrical Projection</a>
+                <a href="#a5">A.5 Bells & Whistles - Cylindrical Projection</a>
             </nav>
         </header>
 
@@ -177,7 +169,7 @@
             <article class="section-card" id="a1">
                 <h2>A.1: Shoot the Pictures</h2>
                 <p>
-                    I took three overlapping photos for each of three scenes: the building, an indoor scene, and a shelf. I used the middle image as the reference image for each group.
+                    I took three overlapping photos for each of three scenes: the building of courtyard, an indoor scene with hallways and doors, and my shelf with my nessies on it. I used the middle image as the reference image for each group.
                 </p>
                 <div class="figure-grid three">
                     <figure class="figure">
@@ -199,18 +191,9 @@
                 <h2>A.2: Recover Homographies</h2>
                 <h3>Establishing point correspondences</h3>
                 <p>
-                    I manually selected corresponding points between overlapping images using the correspondence tool. In most cases, I selected more than four pairs depending on the available features.
+                    I manually selected corresponding points between overlapping images using the correspondence student tool <a href="https://cal-cs180.github.io/fa23/hw/proj3/tool.html">here</a>. In all cases, I selected much more than four pairs depending on the available features.
                 </p>
-                <div class="figure-grid">
-                    <figure class="figure">
-                        <img src="data/results/point_correspondences1.png" alt="Point correspondence examples" />
-                        <figcaption>Point correspondence views from the notebook.</figcaption>
-                    </figure>
-                    <figure class="figure">
-                        <img src="data/results/point_correspondences2.png" alt="More point correspondence examples" />
-                        <figcaption>Additional selected correspondences.</figcaption>
-                    </figure>
-                </div>
+           
                 <p>The numbers of pairs I selected were:</p>
                 <ul>
                     <li>Building: 25 pairs for building1 → building2 and 25 pairs for building3 → building2.</li>
@@ -226,10 +209,7 @@
                         <img src="data/results/a2_building3_building2_points.png" alt="Building 3 and Building 2 correspondences" />
                         <figcaption>Building 3 → Building 2.</figcaption>
                     </figure>
-                    <figure class="figure">
-                        <img src="data/results/a2_building_alignment.png" alt="Building alignment" />
-                        <figcaption>Building alignment result.</figcaption>
-                    </figure>
+                
                 </div>
                 <div class="figure-grid three">
                     <figure class="figure">
@@ -265,37 +245,21 @@
                     v = (dx + ey + f) / (gx + hy + 1)
                 </div>
                 <p>
-                    Rearranging gives a linear system A h = b. I used <code>np.linalg.lstsq()</code> to solve for the 8 unknown parameters and then reshaped them into the 3×3 matrix.
-                </p>
-                <pre>building1 → building2
-[[ 1.8842 -0.0721 -1148.2228]
- [ 0.3482  1.5808  -393.9052]
- [ 0.0005  0.0000     1.0000]]
+    Rearranging gives a linear system Ah = b. I used
+    <code>np.linalg.lstsq()</code> to solve for the 8 unknown parameters
+    and construct the 3×3 homography matrix.
+    
+    
+    <br>For example, the following matrix maps points from building1 to building2.
+</p>
 
-building3 → building2
-[[ 0.6154  0.0236  469.8613]
- [-0.1622  0.8597  102.1234]
- [-0.0002  0.0000    1.0000]]
+<pre>
+H (building1 → building2):
 
-indoor1 → indoor2
-[[ 1.8864  0.0449 -1151.7037]
- [ 0.3010  1.6143  -367.9833]
- [ 0.0005  0.0000     1.0000]]
-
-indoor3 → indoor2
-[[ 0.4225  0.0040  793.7492]
- [-0.2062  0.8520   91.6420]
- [-0.0004  0.0000    1.0000]]
-
-shelf1 → shelf2
-[[ 1.1498 -0.0709 -601.0605]
- [ 0.1716  1.0025   19.5431]
- [ 0.0002 -0.0001    1.0000]]
-
-shelf3 → shelf2
-[[ 0.4646  0.0734  805.8739]
- [-0.3548  0.9437   18.3167]
- [-0.0004  0.0000    1.0000]]</pre>
+[[ 1.8842  -0.0721  -1148.2228]
+ [ 0.3482   1.5808   -393.9052]
+ [ 0.0005   0.0000      1.0000]]
+</pre>
             </article>
 
             <article class="section-card" id="a3">
@@ -309,7 +273,10 @@ shelf3 → shelf2
                 </p>
                 <h3>Image rectification</h3>
                 <p>
-                    I selected four corners of a rectangular object in each image and mapped them to a front-facing rectangle. The point order was top-left, top-right, bottom-left, bottom-right.
+                    For each image, I manually select the four corners of a
+rectangular object and map them to a front-facing rectangle. These points are obatined with <a href="https://imageonline.io/find-coordinates-of-image/">this tool</a>.
+
+                    <br>The point order was top-left, top-right, bottom-left, bottom-right.
                 </p>
                 <div class="figure-grid">
                     <figure class="figure">
@@ -334,18 +301,16 @@ shelf3 → shelf2
                 <p>
                     Nearest neighbor is faster generally. The visual difference between the two methods is quite small. Nearest neighbor looks slightly more pixelated around some edges, while bilinear interpolation produces smoother results. However, bilinear can also make the image slightly blurry.
                 </p>
-                <p class="note">
-                    These are the timings recorded in the notebook output; exact runtime can vary between runs.
-                </p>
+             
             </article>
 
             <article class="section-card" id="a4">
                 <h2>A.4: Blend the Images into a Mosaic</h2>
                 <p>
-                    I used the middle image as the reference and warped the other images into its coordinate system. I first calculated the canvas size using the transformed image corners, then applied inverse warping with bilinear interpolation.
+                    I used the middle image as the reference and warped the other images into its coordinate system. The general step is to first calculated the canvas size using the transformed image corners, then applied inverse warping with bilinear interpolation.
                 </p>
                 <p>
-                    For blending, I used distance-based feathering. Pixels closer to the image edges get smaller weights, while pixels farther from the edges get larger weights. Finally, I combined the warped images using weighted averaging to reduce visible seams.
+                    For blending, I used distance-based feathering. Pixels closer to the image edges get smaller weights, while pixels farther from the edges get larger weights. Then together with results above, I could combined the warped images using weighted averaging to reduce visible seams.
                 </p>
                 <div class="figure-grid three">
                     <figure class="figure">
@@ -361,9 +326,7 @@ shelf3 → shelf2
                         <figcaption>Shelf panorama from shelf1, shelf2, and shelf3.</figcaption>
                     </figure>
                 </div>
-                <p class="note">
-                    Small alignment differences and ghosting can still be visible where the photographs do not overlap perfectly.
-                </p>
+                
             </article>
 
             <article class="section-card" id="a5">
@@ -377,7 +340,7 @@ shelf3 → shelf2
                 </figure>
                 <h3>Effect of focal length</h3>
                 <p>
-                    I tried f = 800, 1200, and 1800 on the building, indoor, and shelf images. For the shelf, a smaller focal length made the wooden edges look too curved, so I used f = 1800. I kept f = 1200 for the building and indoor images.
+                    Here, I did some experiments with different focal lengths. As introduced in lecture, long focal lengths could reduce distortion in wide panoramas. So I tried f = 800, 1200, and 1800 on the building, indoor, and shelf images. For the shelf, a smaller focal length made the wooden edges look too curved, so I used f = 1800. I kept f = 1200 for the building and indoor images.
                 </p>
                 <div class="figure-grid three">
                     <figure class="figure">
@@ -397,24 +360,26 @@ shelf3 → shelf2
                 <div class="figure-grid three">
                     <figure class="figure">
                         <img src="data/results/a5_building_cylindrical.png" alt="Building cylindrical panorama" />
-                        <figcaption>Building cylindrical panorama, f = 1200.</figcaption>
+                        <figcaption>Building cylindrical panorama, f = 1200. (some ghosting present)</figcaption>
+                        <p>The cylindrical panorama shows more ghosting than the planar result. 
+                            I think this is partly because based on my design, I only used translation to align the cylindrical images, while the planar version uses a full homography. Small camera movements and an imperfect focal length estimate may also contribute to the misalignment.</p>
                     </figure>
                     <figure class="figure">
                         <img src="data/results/a5_indoor_cylindrical.png" alt="Indoor cylindrical panorama" />
-                        <figcaption>Indoor cylindrical panorama, f = 1200.</figcaption>
+                        <figcaption>Indoor cylindrical panorama, f = 1200. (perfectly aligned)</figcaption>
                     </figure>
                     <figure class="figure">
                         <img src="data/results/a5_shelf_cylindrical.png" alt="Shelf cylindrical panorama" />
-                        <figcaption>Shelf cylindrical panorama, f = 1800.</figcaption>
+                        <figcaption>Shelf cylindrical panorama, f = 1800. (pretty good but looked curved <- cylindrical projection does not preserve horizontal straight lines )</figcaption>
                     </figure>
                 </div>
                 <h3>Planar vs. cylindrical</h3>
                 <p>
-                    The comparison below shows the planar panoramas from A.4 next to the cylindrical panoramas. Cylindrical projection is useful for the wider views because it changes how the image bends across the panorama, but it does not remove all of the small alignment differences between source photos.
+                    The comparison below shows the planar panoramas from part 4 next to the cylindrical panoramas. Cylindrical projection is useful for the wider views because it changes how the image bends across the panorama, but it does not remove all of the small alignment differences between source photos.
                 </p>
                 <figure class="figure">
                     <img src="data/results/a5_planar_vs_cylindrical.png" alt="Planar and cylindrical panorama comparison" />
-                    <figcaption>Planar results on the left and cylindrical results on the right for the building, indoor, and shelf groups.</figcaption>
+
                 </figure>
             </article>
         </section>
