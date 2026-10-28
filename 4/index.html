@@ -3,22 +3,420 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Project 4</title>
+    <title>CS180/CS280A Project 4A</title>
     <link rel="stylesheet" href="../styles/project.css" />
+    <style>
+        .report {
+            display: grid;
+            gap: 22px;
+        }
+
+        .section-card {
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--surface);
+            box-shadow: var(--shadow);
+            padding: 22px;
+        }
+
+        .section-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.35rem;
+        }
+
+        .section-card h3 {
+            margin: 22px 0 8px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border);
+            font-size: 1.08rem;
+        }
+
+        .section-card h3:first-of-type {
+            margin-top: 16px;
+        }
+
+        .section-card p,
+        .section-card li {
+            color: #334155;
+            line-height: 1.65;
+        }
+
+        .section-card p {
+            margin: 0 0 12px;
+        }
+
+        .section-card ul {
+            margin: 8px 0 12px;
+            padding-left: 22px;
+        }
+
+        .formula,
+        pre {
+            margin: 12px 0 16px;
+            padding: 12px 14px;
+            border-left: 3px solid var(--primary);
+            background: #f5f8ff;
+            overflow-x: auto;
+        }
+
+        .formula {
+            font-family: Georgia, serif;
+            text-align: center;
+        }
+
+        pre {
+            border-radius: 8px;
+            color: #1f2937;
+            font: 0.86rem/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .figure {
+            margin: 14px 0 0;
+        }
+
+        .figure img {
+            display: block;
+            width: 100%;
+            max-height: 540px;
+            object-fit: contain;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #fafafa;
+        }
+
+        .figure figcaption {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .figure-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 14px;
+        }
+
+        .figure-grid.three {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .figure-grid .figure {
+            margin: 0;
+        }
+
+        .figure-grid .figure img {
+            max-height: 360px;
+        }
+
+        .toc {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+            margin: 12px 0 0;
+        }
+
+        .toc a {
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .note {
+            color: var(--muted) !important;
+            font-size: 0.92rem;
+        }
+
+        .runtime-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0;
+        }
+
+        .runtime-table th,
+        .runtime-table td {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .runtime-table th {
+            background: #f8fafc;
+        }
+
+        @media (max-width: 680px) {
+            .figure-grid,
+            .figure-grid.three {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
     <main class="container">
         <header class="header">
             <div class="topline">
-                <p class="badge">CS280 Project</p>
+                <p class="badge">CS180 / CS280A</p>
                 <a class="home-link" href="../index.html">Back to Main</a>
             </div>
-            <h1>Project 4</h1>
-            <p class="desc">Template page with reusable header. Add your project content in the blank area below.</p>
+            <h1>Project 4A: Image Warping and Mosaicing</h1>
+            <p class="desc">
+                Homographies, image rectification, planar mosaics, and cylindrical projection using my building, indoor, and shelf photos.
+            </p>
+            <nav class="toc" aria-label="Report sections">
+                <a href="#a1">A.1 Photos</a>
+                <a href="#a2">A.2 Homographies</a>
+                <a href="#a3">A.3 Rectification</a>
+                <a href="#a4">A.4 Mosaics</a>
+                <a href="#a5">A.5 Cylindrical Projection</a>
+            </nav>
         </header>
 
-        <section class="content-placeholder">
-            <p>Content placeholder.</p>
+        <section class="report">
+            <article class="section-card" id="a1">
+                <h2>A.1: Shoot the Pictures</h2>
+                <p>
+                    I took three overlapping photos for each of three scenes: the building, an indoor scene, and a shelf. I used the middle image as the reference image for each group.
+                </p>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/results/a1_building.png" alt="Three building source photos" />
+                        <figcaption>Building 1, Building 2, and Building 3.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/a1_indoor.png" alt="Three indoor source photos" />
+                        <figcaption>Indoor 1, Indoor 2, and Indoor 3.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/a1_shelf.png" alt="Three shelf source photos" />
+                        <figcaption>Shelf 1, Shelf 2, and Shelf 3.</figcaption>
+                    </figure>
+                </div>
+            </article>
+
+            <article class="section-card" id="a2">
+                <h2>A.2: Recover Homographies</h2>
+                <h3>Establishing point correspondences</h3>
+                <p>
+                    I manually selected corresponding points between overlapping images using the correspondence tool. In most cases, I selected more than four pairs depending on the available features.
+                </p>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/results/point_correspondences1.png" alt="Point correspondence examples" />
+                        <figcaption>Point correspondence views from the notebook.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/point_correspondences2.png" alt="More point correspondence examples" />
+                        <figcaption>Additional selected correspondences.</figcaption>
+                    </figure>
+                </div>
+                <p>The numbers of pairs I selected were:</p>
+                <ul>
+                    <li>Building: 25 pairs for building1 → building2 and 25 pairs for building3 → building2.</li>
+                    <li>Indoor: 11 pairs for indoor1 → indoor2 and 18 pairs for indoor3 → indoor2.</li>
+                    <li>Shelf: 18 pairs for shelf1 → shelf2 and 13 pairs for shelf3 → shelf2.</li>
+                </ul>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/results/a2_building1_building2_points.png" alt="Building 1 and Building 2 correspondences" />
+                        <figcaption>Building 1 → Building 2.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/a2_building3_building2_points.png" alt="Building 3 and Building 2 correspondences" />
+                        <figcaption>Building 3 → Building 2.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/a2_building_alignment.png" alt="Building alignment" />
+                        <figcaption>Building alignment result.</figcaption>
+                    </figure>
+                </div>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/results/a2_indoor1_indoor2_points.png" alt="Indoor 1 and Indoor 2 correspondences" />
+                        <figcaption>Indoor 1 → Indoor 2.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/a2_indoor3_indoor2_points.png" alt="Indoor 3 and Indoor 2 correspondences" />
+                        <figcaption>Indoor 3 → Indoor 2.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/a2_shelf1_shelf2_points.png" alt="Shelf 1 and Shelf 2 correspondences" />
+                        <figcaption>Shelf 1 → Shelf 2.</figcaption>
+                    </figure>
+                </div>
+                <figure class="figure">
+                    <img src="data/results/a2_shelf3_shelf2_points.png" alt="Shelf 3 and Shelf 2 correspondences" />
+                    <figcaption>Shelf 3 → Shelf 2.</figcaption>
+                </figure>
+
+                <h3>Homography equations and least squares</h3>
+                <p>
+                    A homography is a 3×3 matrix that maps points from one image to another:
+                </p>
+                <div class="formula">p′ ∼ Hp</div>
+                <p>
+                    Since H has 8 degrees of freedom, at least 4 point correspondences are required. Each pair provides two equations. I set the bottom-right entry to 1:
+                </p>
+                <div class="formula">H = [[a, b, c], [d, e, f], [g, h, 1]]</div>
+                <p>For corresponding points (x, y) and (u, v), the equations are:</p>
+                <div class="formula">
+                    u = (ax + by + c) / (gx + hy + 1), &nbsp;&nbsp;
+                    v = (dx + ey + f) / (gx + hy + 1)
+                </div>
+                <p>
+                    Rearranging gives a linear system A h = b. I used <code>np.linalg.lstsq()</code> to solve for the 8 unknown parameters and then reshaped them into the 3×3 matrix.
+                </p>
+                <pre>building1 → building2
+[[ 1.8842 -0.0721 -1148.2228]
+ [ 0.3482  1.5808  -393.9052]
+ [ 0.0005  0.0000     1.0000]]
+
+building3 → building2
+[[ 0.6154  0.0236  469.8613]
+ [-0.1622  0.8597  102.1234]
+ [-0.0002  0.0000    1.0000]]
+
+indoor1 → indoor2
+[[ 1.8864  0.0449 -1151.7037]
+ [ 0.3010  1.6143  -367.9833]
+ [ 0.0005  0.0000     1.0000]]
+
+indoor3 → indoor2
+[[ 0.4225  0.0040  793.7492]
+ [-0.2062  0.8520   91.6420]
+ [-0.0004  0.0000    1.0000]]
+
+shelf1 → shelf2
+[[ 1.1498 -0.0709 -601.0605]
+ [ 0.1716  1.0025   19.5431]
+ [ 0.0002 -0.0001    1.0000]]
+
+shelf3 → shelf2
+[[ 0.4646  0.0734  805.8739]
+ [-0.3548  0.9437   18.3167]
+ [-0.0004  0.0000    1.0000]]</pre>
+            </article>
+
+            <article class="section-card" id="a3">
+                <h2>A.3: Warp the Images</h2>
+                <p>
+                    Given a homography H, I used inverse warping. For every output pixel, I used the inverse homography to find its location in the original image:
+                </p>
+                <div class="formula">p ∼ H<sup>−1</sup>p′</div>
+                <p>
+                    I implemented nearest-neighbor sampling and bilinear interpolation. Nearest neighbor samples the closest pixel, while bilinear interpolation uses a weighted average of four neighboring pixels.
+                </p>
+                <h3>Image rectification</h3>
+                <p>
+                    I selected four corners of a rectangular object in each image and mapped them to a front-facing rectangle. The point order was top-left, top-right, bottom-left, bottom-right.
+                </p>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/results/a3_rectification1.png" alt="First rectification with nearest-neighbor and bilinear results" />
+                        <figcaption>Rectification 1: original, nearest neighbor, and bilinear.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/a3_rectification2.png" alt="Second rectification with nearest-neighbor and bilinear results" />
+                        <figcaption>Rectification 2: original, nearest neighbor, and bilinear.</figcaption>
+                    </figure>
+                </div>
+                <h3>Nearest neighbor vs. bilinear</h3>
+                <table class="runtime-table">
+                    <thead>
+                        <tr><th>Rectification</th><th>Nearest Neighbor</th><th>Bilinear</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Rectification 1</td><td>0.018 s</td><td>0.066 s</td></tr>
+                        <tr><td>Rectification 2</td><td>0.003 s</td><td>0.014 s</td></tr>
+                    </tbody>
+                </table>
+                <p>
+                    Nearest neighbor is faster generally. The visual difference between the two methods is quite small. Nearest neighbor looks slightly more pixelated around some edges, while bilinear interpolation produces smoother results. However, bilinear can also make the image slightly blurry.
+                </p>
+                <p class="note">
+                    These are the timings recorded in the notebook output; exact runtime can vary between runs.
+                </p>
+            </article>
+
+            <article class="section-card" id="a4">
+                <h2>A.4: Blend the Images into a Mosaic</h2>
+                <p>
+                    I used the middle image as the reference and warped the other images into its coordinate system. I first calculated the canvas size using the transformed image corners, then applied inverse warping with bilinear interpolation.
+                </p>
+                <p>
+                    For blending, I used distance-based feathering. Pixels closer to the image edges get smaller weights, while pixels farther from the edges get larger weights. Finally, I combined the warped images using weighted averaging to reduce visible seams.
+                </p>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/results/a4_building_panorama.png" alt="Building planar panorama" />
+                        <figcaption>Building panorama from building1, building2, and building3.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/a4_indoor_panorama.png" alt="Indoor planar panorama" />
+                        <figcaption>Indoor panorama from indoor1, indoor2, and indoor3.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/a4_shelf_panorama.png" alt="Shelf planar panorama" />
+                        <figcaption>Shelf panorama from shelf1, shelf2, and shelf3.</figcaption>
+                    </figure>
+                </div>
+                <p class="note">
+                    Small alignment differences and ghosting can still be visible where the photographs do not overlap perfectly.
+                </p>
+            </article>
+
+            <article class="section-card" id="a5">
+                <h2>A.5: Bells &amp; Whistles — Cylindrical Projection</h2>
+                <p>
+                    I implemented cylindrical projection to reduce distortion in wide panoramas. Each image is mapped onto a cylindrical surface using inverse warping and bilinear interpolation.
+                </p>
+                <figure class="figure">
+                    <img src="data/results/a5_cylindrical_comparison.png" alt="Original and cylindrical projection comparison" />
+                    <figcaption>Building 2 before and after cylindrical projection with f = 1200.</figcaption>
+                </figure>
+                <h3>Effect of focal length</h3>
+                <p>
+                    I tried f = 800, 1200, and 1800 on the building, indoor, and shelf images. For the shelf, a smaller focal length made the wooden edges look too curved, so I used f = 1800. I kept f = 1200 for the building and indoor images.
+                </p>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/results/a5_building2_focal_comparison.png" alt="Building focal length comparison" />
+                        <figcaption>Building 2: f = 800, 1200, and 1800.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/a5_indoor2_focal_comparison.png" alt="Indoor focal length comparison" />
+                        <figcaption>Indoor 2: f = 800, 1200, and 1800.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/a5_shelf2_focal_comparison.png" alt="Shelf focal length comparison" />
+                        <figcaption>Shelf 2: f = 800, 1200, and 1800.</figcaption>
+                    </figure>
+                </div>
+                <h3>Cylindrical panoramas</h3>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/results/a5_building_cylindrical.png" alt="Building cylindrical panorama" />
+                        <figcaption>Building cylindrical panorama, f = 1200.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/a5_indoor_cylindrical.png" alt="Indoor cylindrical panorama" />
+                        <figcaption>Indoor cylindrical panorama, f = 1200.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/a5_shelf_cylindrical.png" alt="Shelf cylindrical panorama" />
+                        <figcaption>Shelf cylindrical panorama, f = 1800.</figcaption>
+                    </figure>
+                </div>
+                <h3>Planar vs. cylindrical</h3>
+                <p>
+                    The comparison below shows the planar panoramas from A.4 next to the cylindrical panoramas. Cylindrical projection is useful for the wider views because it changes how the image bends across the panorama, but it does not remove all of the small alignment differences between source photos.
+                </p>
+                <figure class="figure">
+                    <img src="data/results/a5_planar_vs_cylindrical.png" alt="Planar and cylindrical panorama comparison" />
+                    <figcaption>Planar results on the left and cylindrical results on the right for the building, indoor, and shelf groups.</figcaption>
+                </figure>
+            </article>
         </section>
     </main>
 </body>
