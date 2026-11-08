@@ -382,6 +382,147 @@ rectangular object and map them to a front-facing rectangle. These points are ob
 
                 </figure>
             </article>
+
+            <article class="section-card" id="b1">
+                <h2>Part B: Feature Matching for Autostitching</h2>
+                <p>
+                    In Part B, I used Harris corners, Adaptive Non-Maximal Suppression (ANMS), local feature descriptors, descriptor matching, and RANSAC to build panoramas automatically from the same three scenes.
+                </p>
+                <h3>B.1: Harris Corners and ANMS</h3>
+                <p>
+                    Harris detects points whose local image structure changes strongly in both directions. I first used the Harris response to find candidate corners. The raw detector produces many clustered points, so I used ANMS to keep corners that are strong and spatially distributed. For each point, I computed its suppression radius as the distance to the nearest corner with a substantially stronger response, using <code>c = 0.9</code>, and kept the 500 points with the largest radii.
+                </p>
+                <div class="formula">R = det(M) − k(trace(M))<sup>2</sup></div>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/results/b1_harris_building.png" alt="Harris corners overlaid on Building 2" />
+                        <figcaption>Raw Harris corners overlaid on Building 2.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b1_harris_anms.png" alt="Harris corners before and after ANMS" />
+                        <figcaption>Before and after ANMS. The selected 500 corners cover the image more evenly.</figcaption>
+                    </figure>
+                </div>
+            </article>
+
+            <article class="section-card" id="b2">
+                <h2>B.2: Feature Descriptor Extraction</h2>
+                <p>
+                    For every selected point, I took a 40×40 window. I blurred the grayscale image with a Gaussian filter with <code>sigma = 2</code>, then sampled every 5 pixels to get an 8×8 descriptor. This samples a small descriptor from a larger, smoother window instead of using an unblurred 8×8 crop. Finally, I bias/gain-normalized each descriptor:
+                </p>
+                <div class="formula">D′ = (D − mean(D)) / std(D)</div>
+                <p>
+                    Points too close to the image boundary were skipped. Each image produced 500 descriptors in my experiment.
+                </p>
+                <figure class="figure">
+                    <img src="data/results/b2_descriptors.png" alt="Example feature descriptors" />
+                    <figcaption>Examples of the normalized 8×8 feature descriptors.</figcaption>
+                </figure>
+            </article>
+
+            <article class="section-card" id="b3">
+                <h2>B.3: Feature Matching</h2>
+                <p>
+                    I compared descriptors using the sum of squared differences (SSD):
+                </p>
+                <div class="formula">SSD(D<sub>1</sub>, D<sub>2</sub>) = Σ<sub>i</sub>(D<sub>1,i</sub> − D<sub>2,i</sub>)<sup>2</sup></div>
+                <p>
+                    For each descriptor, I found its first and second nearest neighbors. I accepted the match only when the ratio of the two SSDs was below <code>0.5</code>:
+                </p>
+                <div class="formula">d<sub>1</sub> / d<sub>2</sub> &lt; 0.5</div>
+                <p>
+                    This ratio test removes matches whose best candidate is not clearly better than the next candidate. The resulting match counts were 116 for building, 30 for indoor, and 51 for shelf.
+                </p>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/results/b3_building_matches.png" alt="Building feature matches" />
+                        <figcaption>Building matches: 116.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b3_indoor_matches.png" alt="Indoor feature matches" />
+                        <figcaption>Indoor matches: 30.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b3_shelf_matches.png" alt="Shelf feature matches" />
+                        <figcaption>Shelf matches: 51.</figcaption>
+                    </figure>
+                </div>
+            </article>
+
+            <article class="section-card" id="b4">
+                <h2>B.4: RANSAC and Autostitching</h2>
+                <p>
+                    I used 4-point RANSAC to estimate a homography from the descriptor matches. In each trial, I randomly selected four matches, computed a homography, projected all points, and counted inliers whose reprojection error was below 4 pixels. I repeated this for 2,000 iterations and recomputed the final homography using the largest inlier set.
+                </p>
+                <div class="formula">e<sub>i</sub> = ‖normalize(Hp<sub>i</sub>) − p′<sub>i</sub>‖ &lt; 4</div>
+                <p>
+                    The inlier counts were 64/116 and 91/159 for the two building pairs, 10/30 and 16/29 for the indoor pairs, and 30/51 and 14/27 for the shelf pairs. I then used the same inverse-warping, canvas, and feathered blending pipeline from Part A.
+                </p>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/results/b4_building_auto.png" alt="Automatically stitched building panorama" />
+                        <figcaption>Automatically stitched building panorama.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b4_indoor_auto.png" alt="Automatically stitched indoor panorama" />
+                        <figcaption>Automatically stitched indoor panorama.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b4_shelf_auto.png" alt="Automatically stitched shelf panorama" />
+                        <figcaption>Automatically stitched shelf panorama.</figcaption>
+                    </figure>
+                </div>
+                <h3>Inliers and comparison with Part A</h3>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/results/b4_building_inliers.png" alt="Building RANSAC inlier matches" />
+                        <figcaption>Building RANSAC inliers.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b4_building_comparison.png" alt="Manual and automatic building panorama comparison" />
+                        <figcaption>Manual and automatic building results side by side.</figcaption>
+                    </figure>
+                </div>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/results/b4_indoor_comparison.png" alt="Manual and automatic indoor panorama comparison" />
+                        <figcaption>Indoor manual and automatic comparison.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b4_shelf_comparison.png" alt="Manual and automatic shelf panorama comparison" />
+                        <figcaption>Shelf manual and automatic comparison.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b4_shelf1_shelf2_inliers.png" alt="Shelf RANSAC inlier matches" />
+                        <figcaption>Shelf RANSAC inliers.</figcaption>
+                    </figure>
+                </div>
+            </article>
+
+            <article class="section-card" id="b5">
+                <h2>B.5: Bells &amp; Whistles — Rotation Invariance</h2>
+                <p>
+                    I added rotation-aware descriptors. I estimated the local orientation from the image gradient after Gaussian smoothing with <code>sigma = 4.5</code>. I then rotated the sampling coordinates by that angle, bilinearly sampled the same 40×40 window, downsampled it by 5, and normalized the resulting 8×8 descriptor.
+                </p>
+                <div class="formula">θ = atan2(I<sub>y</sub>, I<sub>x</sub>)</div>
+                <p>
+                    For the experiment, I rotated Building 2 by 30°. The rotation-aware matcher returned 258 matches, and RANSAC retained 241 inliers. This worked well for this image, although estimating one orientation from the gradient at each point can still be unstable at weak, flat, or ambiguous corners.
+                </p>
+                <div class="figure-grid">
+                    <figure class="figure">
+                        <img src="data/results/b5_rotation_input.png" alt="Original Building 2 and its 30 degree rotation" />
+                        <figcaption>Original Building 2 and the same image rotated by 30°.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b5_original.png" alt="Original feature matching result" />
+                        <figcaption>Matching result using the original descriptor setup.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b5_rotation.png" alt="Rotation invariant feature matching result" />
+                        <figcaption>Rotation-aware matching result after RANSAC inlier selection.</figcaption>
+                    </figure>
+                </div>
+            </article>
         </section>
     </main>
 </body>
