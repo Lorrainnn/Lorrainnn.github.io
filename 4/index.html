@@ -162,6 +162,11 @@
                 <a href="#a3">A.3 Rectification</a>
                 <a href="#a4">A.4 Mosaics</a>
                 <a href="#a5">A.5 Bells & Whistles - Cylindrical Projection</a>
+                <a href="#b1">B.1 Harris Corners &amp; ANMS</a>
+                <a href="#b2">B.2 Feature Descriptors</a>
+                <a href="#b3">B.3 Feature Matching</a>
+                <a href="#b4">B.4 RANSAC &amp; Autostitching</a>
+                <a href="#b5">B.5 Rotation Invariance</a>
             </nav>
         </header>
 
@@ -385,18 +390,16 @@ rectangular object and map them to a front-facing rectangle. These points are ob
 
             <article class="section-card" id="b1">
                 <h2>Part B: Feature Matching for Autostitching</h2>
-                <p>
-                    In Part B, I used Harris corners, Adaptive Non-Maximal Suppression (ANMS), local feature descriptors, descriptor matching, and RANSAC to build panoramas automatically from the same three scenes.
-                </p>
+               
                 <h3>B.1: Harris Corners and ANMS</h3>
                 <p>
-                    Harris detects points whose local image structure changes strongly in both directions. I first used the Harris response to find candidate corners. The raw detector produces many clustered points, so I used ANMS to keep corners that are strong and spatially distributed. For each point, I computed its suppression radius as the distance to the nearest corner with a substantially stronger response, using <code>c = 0.9</code>, and kept the 500 points with the largest radii.
+                    The main idea of Harris is to detect points whose local image structure changes strongly in both x and y directions. Harris is first used to compute corner responses and find candidate corners. As shown below, the raw detector produces too many points scattered all over the image. Thus, we introduce ANMS to keep strong points that are also spatially well distributed. For each point, I computed its suppression radius as the distance to the nearest corner with a substantially stronger response, using the same parameter as the MOPS paper, `c = 0.9`, and kept the 500 points with the largest radii.
                 </p>
                 <div class="formula">R = det(M) − k(trace(M))<sup>2</sup></div>
                 <div class="figure-grid">
                     <figure class="figure">
                         <img src="data/results/b1_harris_building.png" alt="Harris corners overlaid on Building 2" />
-                        <figcaption>Raw Harris corners overlaid on Building 2.</figcaption>
+                        <figcaption>Raw Harris corners detected in Building 2. The detector produces a large number of corners, resulting in a dense distribution across the image.</figcaption>
                     </figure>
                     <figure class="figure">
                         <img src="data/results/b1_harris_anms.png" alt="Harris corners before and after ANMS" />
@@ -408,31 +411,28 @@ rectangular object and map them to a front-facing rectangle. These points are ob
             <article class="section-card" id="b2">
                 <h2>B.2: Feature Descriptor Extraction</h2>
                 <p>
-                    For every selected point, I took a 40×40 window. I blurred the grayscale image with a Gaussian filter with <code>sigma = 2</code>, then sampled every 5 pixels to get an 8×8 descriptor. This samples a small descriptor from a larger, smoother window instead of using an unblurred 8×8 crop. Finally, I bias/gain-normalized each descriptor:
+                    For every selected point, a 40×40 window has been used to extract its feature descriptor. I blurred the grayscale image with a Gaussian filter with <code>sigma = 2</code>, then sampled every 5 pixels to get an 8×8 descriptor. 
+                    This samples a small descriptor from a larger, smoother window instead of using an unblurred 8×8 crop. 
                 </p>
-                <div class="formula">D′ = (D − mean(D)) / std(D)</div>
+              
                 <p>
-                    Points too close to the image boundary were skipped. Each image produced 500 descriptors in my experiment.
+                    Based on experienment setting, each image produced 500 descriptors.
                 </p>
                 <figure class="figure">
                     <img src="data/results/b2_descriptors.png" alt="Example feature descriptors" />
-                    <figcaption>Examples of the normalized 8×8 feature descriptors.</figcaption>
+                    <figcaption>Some 8×8 feature descriptors.</figcaption>
                 </figure>
             </article>
 
             <article class="section-card" id="b3">
                 <h2>B.3: Feature Matching</h2>
-                <p>
-                    I compared descriptors using the sum of squared differences (SSD):
-                </p>
+               
                 <div class="formula">SSD(D<sub>1</sub>, D<sub>2</sub>) = Σ<sub>i</sub>(D<sub>1,i</sub> − D<sub>2,i</sub>)<sup>2</sup></div>
                 <p>
-                    For each descriptor, I found its first and second nearest neighbors. I accepted the match only when the ratio of the two SSDs was below <code>0.5</code>:
+                    SSD is used to compare descriptors. For each descriptor, I use the **2-NN Ratio Test** to find its first and second nearest neighbors and only accept the match if the ratio of their SSDs is below `0.5`. This helps remove matches where the best candidate is not clearly better than the second best. The resulting match counts were 116 for building, 30 for indoor, and 51 for shelf.
                 </p>
                 <div class="formula">d<sub>1</sub> / d<sub>2</sub> &lt; 0.5</div>
-                <p>
-                    This ratio test removes matches whose best candidate is not clearly better than the next candidate. The resulting match counts were 116 for building, 30 for indoor, and 51 for shelf.
-                </p>
+               
                 <div class="figure-grid three">
                     <figure class="figure">
                         <img src="data/results/b3_building_matches.png" alt="Building feature matches" />
@@ -444,7 +444,7 @@ rectangular object and map them to a front-facing rectangle. These points are ob
                     </figure>
                     <figure class="figure">
                         <img src="data/results/b3_shelf_matches.png" alt="Shelf feature matches" />
-                        <figcaption>Shelf matches: 51.</figcaption>
+                        <figcaption>Shelf matches: 51. Some obvious incorrect matches are still present, which is why we introduce RANSAC to remove these outliers. Otherwise, they could negatively affect the homography estimation. </figcaption>
                     </figure>
                 </div>
             </article>
@@ -452,49 +452,69 @@ rectangular object and map them to a front-facing rectangle. These points are ob
             <article class="section-card" id="b4">
                 <h2>B.4: RANSAC and Autostitching</h2>
                 <p>
-                    I used 4-point RANSAC to estimate a homography from the descriptor matches. In each trial, I randomly selected four matches, computed a homography, projected all points, and counted inliers whose reprojection error was below 4 pixels. I repeated this for 2,000 iterations and recomputed the final homography using the largest inlier set.
+                    As described in the assignment, I used 4-point RANSAC to estimate a homography from the feature matches. Since a homography has 8 degrees of freedom, at least 4 point correspondences are needed to solve the system of equations. In each iteration, I randomly selected four matches, computed a homography, and projected all matched points to count the inliers with a reprojection error below 4 pixels. I repeated this process for 2,000 iterations and recomputed the final homography using the largest inlier set.
                 </p>
                 <div class="formula">e<sub>i</sub> = ‖normalize(Hp<sub>i</sub>) − p′<sub>i</sub>‖ &lt; 4</div>
                 <p>
-                    The inlier counts were 64/116 and 91/159 for the two building pairs, 10/30 and 16/29 for the indoor pairs, and 30/51 and 14/27 for the shelf pairs. I then used the same inverse-warping, canvas, and feathered blending pipeline from Part A.
+                    The inlier counts were 64/116 and 91/159 for the two building pairs, 10/30 and 16/29 for the indoor pairs, and 30/51 and 14/27 for the shelf pairs. 
+                    I used the same inverse-warping, canvas, and feathered blending pipeline as Part A for stitching.
                 </p>
+                
+                <h3>RANSAC inliers</h3>
                 <div class="figure-grid three">
                     <figure class="figure">
-                        <img src="data/results/b4_building_auto.png" alt="Automatically stitched building panorama" />
-                        <figcaption>Automatically stitched building panorama.</figcaption>
+                        <img src="data/results/b4_building1_building2_inliers.png" alt="Building 1 and Building 2 RANSAC inlier matches" />
+                        <figcaption>Building 1 → Building 2: 64 inliers.</figcaption>
                     </figure>
                     <figure class="figure">
-                        <img src="data/results/b4_indoor_auto.png" alt="Automatically stitched indoor panorama" />
-                        <figcaption>Automatically stitched indoor panorama.</figcaption>
+                        <img src="data/results/b4_building3_building2_inliers.png" alt="Building 3 and Building 2 RANSAC inlier matches" />
+                        <figcaption>Building 3 → Building 2: 91 inliers.</figcaption>
                     </figure>
                     <figure class="figure">
-                        <img src="data/results/b4_shelf_auto.png" alt="Automatically stitched shelf panorama" />
-                        <figcaption>Automatically stitched shelf panorama.</figcaption>
-                    </figure>
-                </div>
-                <h3>Inliers and comparison with Part A</h3>
-                <div class="figure-grid">
-                    <figure class="figure">
-                        <img src="data/results/b4_building_inliers.png" alt="Building RANSAC inlier matches" />
-                        <figcaption>Building RANSAC inliers.</figcaption>
+                        <img src="data/results/b4_indoor1_indoor2_inliers.png" alt="Indoor 1 and Indoor 2 RANSAC inlier matches" />
+                        <figcaption>Indoor 1 → Indoor 2: 10 inliers.</figcaption>
                     </figure>
                     <figure class="figure">
-                        <img src="data/results/b4_building_comparison.png" alt="Manual and automatic building panorama comparison" />
-                        <figcaption>Manual and automatic building results side by side.</figcaption>
-                    </figure>
-                </div>
-                <div class="figure-grid three">
-                    <figure class="figure">
-                        <img src="data/results/b4_indoor_comparison.png" alt="Manual and automatic indoor panorama comparison" />
-                        <figcaption>Indoor manual and automatic comparison.</figcaption>
-                    </figure>
-                    <figure class="figure">
-                        <img src="data/results/b4_shelf_comparison.png" alt="Manual and automatic shelf panorama comparison" />
-                        <figcaption>Shelf manual and automatic comparison.</figcaption>
+                        <img src="data/results/b4_indoor3_indoor2_inliers.png" alt="Indoor 3 and Indoor 2 RANSAC inlier matches" />
+                        <figcaption>Indoor 3 → Indoor 2: 16 inliers.</figcaption>
                     </figure>
                     <figure class="figure">
                         <img src="data/results/b4_shelf1_shelf2_inliers.png" alt="Shelf RANSAC inlier matches" />
-                        <figcaption>Shelf RANSAC inliers.</figcaption>
+                        <figcaption>Shelf 1 → Shelf 2: 30 inliers.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b4_shelf3_shelf2_inliers.png" alt="Shelf 3 and Shelf 2 RANSAC inlier matches" />
+                        <figcaption>Shelf 3 → Shelf 2: 14 inliers.</figcaption>
+                    </figure>
+                </div>
+                <h3>Automatic panoramas and comparison with Part A</h3>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/results/b4_building_auto.png" alt="Automatically stitched building panorama" />
+                        <figcaption>Automatic building panorama.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b4_indoor_auto.png" alt="Automatically stitched indoor panorama" />
+                        <figcaption>Automatic indoor panorama.</figcaption>
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b4_shelf_auto.png" alt="Automatically stitched shelf panorama" />
+                        <figcaption>Automatic shelf panorama.</figcaption>
+                    </figure>
+                </div>
+                <div class="figure-grid three">
+                    <figure class="figure">
+                        <img src="data/results/b4_building_comparison.png" alt="Manual and automatic building panorama comparison" />
+                        
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b4_indoor_comparison.png" alt="Manual and automatic indoor panorama comparison" />
+                      
+                    </figure>
+                    <figure class="figure">
+                        <img src="data/results/b4_shelf_comparison.png" alt="Manual and automatic shelf panorama comparison" />
+                        
+                    
                     </figure>
                 </div>
             </article>
@@ -502,11 +522,13 @@ rectangular object and map them to a front-facing rectangle. These points are ob
             <article class="section-card" id="b5">
                 <h2>B.5: Bells &amp; Whistles — Rotation Invariance</h2>
                 <p>
-                    I added rotation-aware descriptors. I estimated the local orientation from the image gradient after Gaussian smoothing with <code>sigma = 4.5</code>. I then rotated the sampling coordinates by that angle, bilinearly sampled the same 40×40 window, downsampled it by 5, and normalized the resulting 8×8 descriptor.
+                    For this extra section, I tried to add rotation-aware descriptors to handle rotated images. The idea comes from a simple question: what if the image is rotated? The original descriptor might not match well, so I wanted to make it more rotation-invariant. I first used Gaussian smoothing with sigma = 4.5 and calculated the local gradient direction at each corner. Then I rotated the sampling grid based on this direction and used bilinear interpolation to get an 8×8 patch, followed by normalization.
+
+
                 </p>
                 <div class="formula">θ = atan2(I<sub>y</sub>, I<sub>x</sub>)</div>
                 <p>
-                    For the experiment, I rotated Building 2 by 30°. The rotation-aware matcher returned 258 matches, and RANSAC retained 241 inliers. This worked well for this image, although estimating one orientation from the gradient at each point can still be unstable at weak, flat, or ambiguous corners.
+                    To test this, I rotated Building 2 by 30°. The rotation-aware descriptor found 258 matches, with 241 inliers after RANSAC. The result looks promising, but the estimated orientation may not always be accurate, especially in areas without a clear gradient direction, such as the central yard.
                 </p>
                 <div class="figure-grid">
                     <figure class="figure">
