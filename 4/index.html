@@ -395,7 +395,9 @@ rectangular object and map them to a front-facing rectangle. These points are ob
                 <p>
                     The main idea of Harris is to detect points whose local image structure changes strongly in both x and y directions. Harris is first used to compute corner responses and find candidate corners. As shown below, the raw detector produces too many points scattered all over the image. Thus, we introduce ANMS to keep strong points that are also spatially well distributed. For each point, I computed its suppression radius as the distance to the nearest corner with a substantially stronger response, using the same parameter as the MOPS paper, `c = 0.9`, and kept the 500 points with the largest radii.
                 </p>
-                <div class="formula">R = det(M) − k(trace(M))<sup>2</sup></div>
+                <div class="formula">
+                    R = det(M) / tr(M)
+                </div>
                 <div class="figure-grid">
                     <figure class="figure">
                         <img src="data/results/b1_harris_building.png" alt="Harris corners overlaid on Building 2" />
@@ -412,7 +414,7 @@ rectangular object and map them to a front-facing rectangle. These points are ob
                 <h2>B.2: Feature Descriptor Extraction</h2>
                 <p>
                     For every selected point, a 40×40 window has been used to extract its feature descriptor. I blurred the grayscale image with a Gaussian filter with <code>sigma = 2</code>, then sampled every 5 pixels to get an 8×8 descriptor. 
-                    This samples a small descriptor from a larger, smoother window instead of using an unblurred 8×8 crop. 
+                    This samples a small descriptor from a larger, smoother window instead of using an unblurred 8×8 crop. I also normalized each descriptor to have zero mean and unit standard deviation, making it less sensitive to brightness and contrast changes.
                 </p>
               
                 <p>
@@ -528,7 +530,14 @@ rectangular object and map them to a front-facing rectangle. These points are ob
                 </p>
                 <div class="formula">θ = atan2(I<sub>y</sub>, I<sub>x</sub>)</div>
                 <p>
-                    To test this, I rotated Building 2 by 30°. The rotation-aware descriptor found 258 matches, with 241 inliers after RANSAC. The result looks promising, but the estimated orientation may not always be accurate, especially in areas without a clear gradient direction, such as the central yard.
+                    <p>
+                    To test this, I rotated Building 2 by 30°.
+                    The original descriptor found only 4 matches, while the
+                    rotation-invariant descriptor found 258 matches, with
+                    241 inliers after RANSAC. The result looks promising,
+                    although the estimated orientation may not always be
+                    accurate in areas without a clear gradient direction.
+                </p>
                 </p>
                 <div class="figure-grid">
                     <figure class="figure">
